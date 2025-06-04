@@ -1,0 +1,11 @@
+{
+  "id": 1,
+  "title": "Basic Greetings",
+  "sentences": [
+    {
+      "id": 1,
+      "text": "Hola, me llamo Juan",
+      "audio": "lesson-1-sentence-1.mp3"
+    }
+  ]
+}
