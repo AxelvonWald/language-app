@@ -1,14 +1,21 @@
 {
   "1": {
     "id": 1,
-    "target": "Hola",
-    "native": "Hello"
+    "target": "Me llamo {name}",
+    "native": "My name is {name}",
+    "fallback_target": "Me llamo Alex",
+    "fallback_native": "My name is Alex",
+    "variables": ["name"]
   },
 
   "2": {
     "id": 2,
-    "target": "¿Cómo estás?",
-    "native": "How are you?"
+    "target": "Me gusta {hobby}",
+    "native": "I like {hobby}",
+    "fallback_target": "Me gusta cocinar",
+    "fallback_native": "I like cooking",
+    "variables": ["hobby"]
+
   },
 
   "3": {

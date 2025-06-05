@@ -1,5 +1,11 @@
 // components/lesson/SentenceTable.jsx
+"use client";
+
+import usePersonalization from '@/hooks/usePersonalization';
+
 export default function SentenceTable({ sentences, showColumns }) {
+  const { personalizeSentence } = usePersonalization();
+  
   if (!sentences || sentences.length === 0) {
     return <div>No sentences available</div>;
   }
@@ -35,31 +41,35 @@ export default function SentenceTable({ sentences, showColumns }) {
         </tr>
       </thead>
       <tbody>
-        {sentences.map((sentence, index) => (
-          <tr key={sentence.id} style={{
-            backgroundColor: index % 2 === 0 ? "#fff" : "#f9f9f9"
-          }}>
-            {showColumns.includes('target') && (
-              <td style={{
-                padding: "12px",
-                borderBottom: "1px solid #eee",
-                fontSize: "1.1rem"
-              }}>
-                {sentence.target}
-              </td>
-            )}
-            {showColumns.includes('native') && (
-              <td style={{
-                padding: "12px",
-                borderBottom: "1px solid #eee",
-                color: "#666",
-                fontSize: "1rem"
-              }}>
-                {sentence.native}
-              </td>
-            )}
-          </tr>
-        ))}
+        {sentences.map((sentence, index) => {
+          const personalizedSentence = personalizeSentence(sentence);
+          
+          return (
+            <tr key={sentence.id} style={{
+              backgroundColor: index % 2 === 0 ? "#fff" : "#f9f9f9"
+            }}>
+              {showColumns.includes('target') && (
+                <td style={{
+                  padding: "12px",
+                  borderBottom: "1px solid #eee",
+                  fontSize: "1.1rem"
+                }}>
+                  {personalizedSentence.target}
+                </td>
+              )}
+              {showColumns.includes('native') && (
+                <td style={{
+                  padding: "12px",
+                  borderBottom: "1px solid #eee",
+                  color: "#666",
+                  fontSize: "1rem"
+                }}>
+                  {personalizedSentence.native}
+                </td>
+              )}
+            </tr>
+          );
+        })}
       </tbody>
     </table>
   );

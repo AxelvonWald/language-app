@@ -1,6 +1,6 @@
-// components/lesson/LessonCompletion.jsx
 "use client";
 
+// components/lesson/LessonCompletion.jsx
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -12,6 +12,12 @@ export default function LessonCompletion({ currentLessonId, totalLessons = 32 })
   const hasNextLesson = nextLessonId <= totalLessons;
   
   const handleNextLesson = () => {
+    // Redirect to personalization after lesson 1
+    if (currentLessonId === '2') {
+      router.push('/personalize-01');
+      return;
+    }
+    
     if (hasNextLesson) {
       router.push(`/lessons/${nextLessonId}`);
     }
