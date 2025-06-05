@@ -1,15 +1,15 @@
 {
-  "id": 1,
+  "id": 2,
   "title": "Basic Greetings",
   "sections": {
     "listenRead": {
       "instruction": "Listen carefully to the pronunciation.",
-      "audio": "sentence-1.mp3",
+      "audio": "lesson-1-section-1.mp3",
       "sentence_ids": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     },
     "listenRepeat": {
       "instruction": "Repeat after the audio.",
-      "audio": "sentence-2.mp3",
+      "audio": "lesson-1-section-2.mp3",
       "sentence_ids": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     },
     "write": {
@@ -18,7 +18,7 @@
     },
     "translation": {
       "instruction": "Translate back to your native language.",
-      "audio": "sentence-1.mp3",
+      "audio": "lesson-1-section-1.mp3",
       "sentence_ids": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     },
     "restOfDay": {

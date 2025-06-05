@@ -1,0 +1,61 @@
+{
+  "1": {
+    "id": 1,
+    "target": "Hola",
+    "native": "Hello"
+  },
+
+  "2": {
+    "id": 2,
+    "target": "¿Cómo estás?",
+    "native": "How are you?"
+  },
+
+  "3": {
+    "id": 3,
+    "target": "¿Cómo estás?",
+    "native": "How are you?"
+  },
+
+  "4": {
+    "id": 4,
+    "target": "¿Cómo estás?",
+    "native": "How are you?"
+  },
+
+  "5": {
+    "id": 5,
+    "target": "¿Cómo estás?",
+    "native": "How are you?"
+  },
+
+  "6": {
+    "id": 6,
+    "target": "¿Cómo estás?",
+    "native": "How are you?"
+  },
+
+  "7": {
+    "id": 7,
+    "target": "¿Cómo estás?",
+    "native": "How are you?"
+  },
+
+  "8": {
+    "id": 8,
+    "target": "¿Cómo estás?",
+    "native": "How are you?"
+  },
+
+  "9": {
+    "id": 9,
+    "target": "¿Cómo estás?",
+    "native": "How are you?"
+  },
+
+  "10": {
+    "id": 10,
+    "target": "¿Cómo estás?",
+    "native": "How are you?"
+  }
+}
