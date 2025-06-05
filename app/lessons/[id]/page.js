@@ -7,6 +7,7 @@ import SentenceTable from "@/components/lesson/SentenceTable"
 import Section from "@/components/lesson/Section"
 import LessonCompletion from "@/components/lesson/LessonCompletion"
 import { useProgress } from "@/hooks/useProgress"
+import styles from "./Lesson.module.css"
 
 export default function LessonPage({ params }) {
   const router = useRouter()
@@ -131,8 +132,11 @@ export default function LessonPage({ params }) {
   // Loading states
   if (loading || loadingLesson) {
     return (
-      <div className="lesson-container">
-        <div>Loading lesson...</div>
+      <div className={styles.lessonContainer}>
+        <div className={styles.loading}>
+          <div className={styles.loadingSpinner}></div>
+          <div>Loading lesson...</div>
+        </div>
       </div>
     )
   }
@@ -140,18 +144,25 @@ export default function LessonPage({ params }) {
   // No lesson data
   if (!lessonData || !sentencesDB) {
     return (
-      <div className="lesson-container">
-        <div>Lesson not found</div>
+      <div className={styles.lessonContainer}>
+        <div className={styles.error}>
+          <h2>Lesson not found</h2>
+          <p>The requested lesson could not be loaded.</p>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="lesson-container">
-      <div className="lesson-header">
-        <h1>Lesson {params.id}: {lessonData.title}</h1>
+    <div className={styles.lessonContainer}>
+      <div className={styles.lessonHeader}>
+        <h1 className={styles.lessonTitle}>
+          Lesson {params.id}: {lessonData.title}
+        </h1>
         {isLessonCompleted(lessonId) && (
-          <div className="completion-badge">✓ Completed</div>
+          <div className={styles.completionBadge}>
+            ✓ Completed
+          </div>
         )}
       </div>
       
@@ -162,6 +173,7 @@ export default function LessonPage({ params }) {
         audio={getAudioPath(lessonData.sections.listenRead.audio)}
         sentences={getSectionSentences('listenRead')}
         showColumns={['target', 'native']}
+        className={styles.section}
       />
       
       {/* Section 2: Listen and Repeat */}
@@ -171,6 +183,7 @@ export default function LessonPage({ params }) {
         audio={getAudioPath(lessonData.sections.listenRepeat.audio)}
         sentences={getSectionSentences('listenRepeat')}
         showColumns={['target', 'native']}
+        className={styles.section}
       />
       
       {/* Section 3: Write */}
@@ -179,6 +192,7 @@ export default function LessonPage({ params }) {
         instruction={lessonData.sections.write.instruction}
         sentences={getSectionSentences('write')}
         showColumns={['target', 'native']}
+        className={styles.section}
       />
       
       {/* Section 4: Translation - Only native language */}
@@ -188,6 +202,7 @@ export default function LessonPage({ params }) {
         audio={getAudioPath(lessonData.sections.translation.audio)}
         sentences={getSectionSentences('translation')}
         showColumns={['native']}
+        className={styles.section}
       />
       
       {/* Section 5: Rest of Day */}
@@ -196,6 +211,7 @@ export default function LessonPage({ params }) {
         instruction={lessonData.sections.restOfDay.instruction}
         sentences={getSectionSentences('restOfDay')}
         showColumns={['target', 'native']}
+        className={styles.section}
       />
 
       {/* Lesson Completion */}

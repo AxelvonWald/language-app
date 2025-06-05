@@ -1,0 +1,104 @@
+/* components/layout/Header.module.css */
+
+.header {
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 4rem;
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1f2937;
+  text-decoration: none;
+  font-family: var(--font-geist-sans);
+  transition: color 0.2s ease;
+}
+
+.logo:hover {
+  color: #3b82f6;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.navLink {
+  color: #6b7280;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+  font-family: var(--font-geist-sans);
+  font-size: 0.95rem;
+}
+
+.navLink:hover {
+  color: #3b82f6;
+  background-color: #f8fafc;
+}
+
+.logoutBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #dc2626;
+}
+
+.logoutBtn:hover {
+  color: #b91c1c;
+  background-color: #fef2f2;
+}
+
+.loading {
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .container {
+    padding: 0 0.75rem;
+    height: 3.5rem;
+  }
+  
+  .logo {
+    font-size: 1.25rem;
+  }
+  
+  .nav {
+    gap: 1rem;
+  }
+  
+  .navLink {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .nav {
+    gap: 0.5rem;
+  }
+  
+  .navLink {
+    padding: 0.5rem;
+    font-size: 0.85rem;
+  }
+}

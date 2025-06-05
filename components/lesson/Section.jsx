@@ -1,34 +1,37 @@
 // components/lesson/Section.jsx
 import AudioPlayer from "./AudioPlayer";
 import SentenceTable from "./SentenceTable";
-import { supabase } from '@/lib/supabase'
+import styles from "./Section.module.css";
 
-export default function Section({ title, instruction, audio, sentences, showColumns }) {
+export default function Section({ 
+  title, 
+  instruction, 
+  audio, 
+  sentences, 
+  showColumns,
+  className = "" 
+}) {
   return (
-    <div style={{ 
-      marginTop: "3rem", 
-      padding: "2rem", 
-      border: "1px solid #ddd", 
-      borderRadius: "12px",
-      backgroundColor: "#fafafa"
-    }}>
-      <h2 style={{ marginTop: 0, color: "#333" }}>{title}</h2>
-      <p style={{ 
-        color: "#666", 
-        fontSize: "1.1rem", 
-        marginBottom: "1.5rem",
-        fontStyle: "italic"
-      }}>
-        {instruction}
-      </p>
+    <div className={`${styles.section} ${className}`}>
+      <h2 className={styles.sectionTitle}>{title}</h2>
+      
+      {instruction && (
+        <p className={styles.sectionInstruction}>
+          {instruction}
+        </p>
+      )}
       
       {audio && (
-        <div style={{ marginBottom: "1.5rem" }}>
+        <div className={styles.audioSection}>
           <AudioPlayer audioPath={audio} />
         </div>
       )}
       
-      <SentenceTable sentences={sentences} showColumns={showColumns} />
+      <SentenceTable 
+        sentences={sentences} 
+        showColumns={showColumns}
+        className={styles.sentenceTable}
+      />
     </div>
   );
 }
