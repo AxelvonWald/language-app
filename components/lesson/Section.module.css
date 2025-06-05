@@ -42,9 +42,7 @@
   border: 1px solid #f3f4f6;
 }
 
-.sentenceTable {
-  /* Styles will be handled by SentenceTable component */
-}
+
 
 /* Mobile responsiveness */
 @media (max-width: 768px) {
