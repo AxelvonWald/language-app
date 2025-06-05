@@ -1,11 +1,13 @@
 "use client";
 
 // app/personalize/page.js
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useProgress } from '@/hooks/useProgress';
 
 export default function PersonalizePage() {
   const router = useRouter();
+  const { user, loading, savePersonalization, hasPersonalized } = useProgress();
   const [formData, setFormData] = useState({
     name: '',
     hobby: '',
@@ -14,6 +16,19 @@ export default function PersonalizePage() {
     age: '',
     family_size: ''
   });
+  const [saving, setSaving] = useState(false);
+
+  // Redirect if user is not logged in
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+    }
+    
+    // If already personalized, redirect to next lesson
+    if (!loading && hasPersonalized()) {
+      router.push('/lessons/3');
+    }
+  }, [user, loading, hasPersonalized, router]);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -22,15 +37,48 @@ export default function PersonalizePage() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Save to localStorage for now (replace with Supabase later)
-    localStorage.setItem('userPersonalization', JSON.stringify(formData));
+    if (!user) return;
     
-    // Redirect to lesson 3
-    router.push('/lessons/3');
+    setSaving(true);
+    
+    try {
+      const success = await savePersonalization(formData);
+      
+      if (success) {
+        // Redirect to lesson 3
+        router.push('/lessons/3');
+      } else {
+        alert('Error saving your information. Please try again.');
+      }
+    } catch (error) {
+      console.error('Save error:', error);
+      alert('Error saving your information. Please try again.');
+    } finally {
+      setSaving(false);
+    }
   };
+
+  // Show loading while checking authentication
+  if (loading) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '50vh' 
+      }}>
+        <div>Loading...</div>
+      </div>
+    );
+  }
+
+  // Don't render form if user not authenticated
+  if (!user) {
+    return null;
+  }
 
   const isFormValid = formData.name && formData.hobby && formData.country;
 
@@ -43,7 +91,7 @@ export default function PersonalizePage() {
       borderRadius: '12px'
     }}>
       <h1 style={{ textAlign: 'center', color: '#333' }}>
-        Let's Personalize Your Learning!
+        Let us Personalize Your Learning!
       </h1>
       
       <p style={{ 
@@ -58,7 +106,7 @@ export default function PersonalizePage() {
       <form onSubmit={handleSubmit}>
         <div style={{ marginBottom: '1.5rem' }}>
           <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>
-            What's your name? *
+            What is your name? *
           </label>
           <input
             type="text"
@@ -73,12 +121,13 @@ export default function PersonalizePage() {
               borderRadius: '6px'
             }}
             required
+            disabled={saving}
           />
         </div>
 
         <div style={{ marginBottom: '1.5rem' }}>
           <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>
-            What's your favorite hobby? *
+            What is your favorite hobby? *
           </label>
           <input
             type="text"
@@ -93,6 +142,7 @@ export default function PersonalizePage() {
               borderRadius: '6px'
             }}
             required
+            disabled={saving}
           />
         </div>
 
@@ -113,12 +163,13 @@ export default function PersonalizePage() {
               borderRadius: '6px'
             }}
             required
+            disabled={saving}
           />
         </div>
 
         <div style={{ marginBottom: '1.5rem' }}>
           <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>
-            What's your job?
+            What is your job?
           </label>
           <input
             type="text"
@@ -132,6 +183,7 @@ export default function PersonalizePage() {
               border: '1px solid #ddd',
               borderRadius: '6px'
             }}
+            disabled={saving}
           />
         </div>
 
@@ -157,6 +209,7 @@ export default function PersonalizePage() {
                 border: '1px solid #ddd',
                 borderRadius: '6px'
               }}
+              disabled={saving}
             />
           </div>
           
@@ -176,27 +229,28 @@ export default function PersonalizePage() {
                 border: '1px solid #ddd',
                 borderRadius: '6px'
               }}
+              disabled={saving}
             />
           </div>
         </div>
 
         <button
           type="submit"
-          disabled={!isFormValid}
+          disabled={!isFormValid || saving}
           style={{
             width: '100%',
             padding: '16px',
             fontSize: '1.2rem',
             fontWeight: '600',
-            backgroundColor: isFormValid ? '#007bff' : '#ccc',
+            backgroundColor: (!isFormValid || saving) ? '#ccc' : '#007bff',
             color: 'white',
             border: 'none',
             borderRadius: '8px',
-            cursor: isFormValid ? 'pointer' : 'not-allowed',
+            cursor: (!isFormValid || saving) ? 'not-allowed' : 'pointer',
             transition: 'all 0.2s ease'
           }}
         >
-          Continue to Lesson 3 →
+          {saving ? 'Saving...' : 'Continue to Lesson 3 →'}
         </button>
       </form>
     </div>

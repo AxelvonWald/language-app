@@ -1,6 +1,7 @@
 // components/lesson/Section.jsx
 import AudioPlayer from "./AudioPlayer";
 import SentenceTable from "./SentenceTable";
+import { supabase } from '@/lib/supabase'
 
 export default function Section({ title, instruction, audio, sentences, showColumns }) {
   return (
