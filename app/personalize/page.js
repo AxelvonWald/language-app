@@ -1,6 +1,7 @@
+// app/personalize/page.js
+
 "use client";
 
-// app/personalize/page.js
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useProgress } from '@/hooks/useProgress';

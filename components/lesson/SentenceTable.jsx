@@ -1,11 +1,7 @@
 // components/lesson/SentenceTable.jsx
 "use client";
 
-import usePersonalization from '@/hooks/usePersonalization';
-
 export default function SentenceTable({ sentences, showColumns }) {
-  const { personalizeSentence } = usePersonalization();
-  
   if (!sentences || sentences.length === 0) {
     return <div>No sentences available</div>;
   }
@@ -42,8 +38,7 @@ export default function SentenceTable({ sentences, showColumns }) {
       </thead>
       <tbody>
         {sentences.map((sentence, index) => {
-          const personalizedSentence = personalizeSentence(sentence);
-          
+          // Sentences are already personalized by getSectionSentences - use them directly
           return (
             <tr key={sentence.id} style={{
               backgroundColor: index % 2 === 0 ? "#fff" : "#f9f9f9"
@@ -54,7 +49,7 @@ export default function SentenceTable({ sentences, showColumns }) {
                   borderBottom: "1px solid #eee",
                   fontSize: "1.1rem"
                 }}>
-                  {personalizedSentence.target}
+                  {sentence.target}
                 </td>
               )}
               {showColumns.includes('native') && (
@@ -64,7 +59,7 @@ export default function SentenceTable({ sentences, showColumns }) {
                   color: "#666",
                   fontSize: "1rem"
                 }}>
-                  {personalizedSentence.native}
+                  {sentence.native}
                 </td>
               )}
             </tr>

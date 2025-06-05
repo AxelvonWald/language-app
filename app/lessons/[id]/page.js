@@ -1,4 +1,3 @@
-// app/lessons/[id]/page.js
 'use client'
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
@@ -7,10 +6,13 @@ import SentenceTable from "@/components/lesson/SentenceTable"
 import Section from "@/components/lesson/Section"
 import LessonCompletion from "@/components/lesson/LessonCompletion"
 import { useProgress } from "@/hooks/useProgress"
+import { supabase } from "@/lib/supabase"
 import styles from "./Lesson.module.css"
 
 export default function LessonPage({ params }) {
   const router = useRouter()
+  
+  // Get data from useProgress hook
   const {
     user,
     loading,
@@ -21,6 +23,15 @@ export default function LessonPage({ params }) {
     completeLesson
   } = useProgress()
 
+  // DEBUG LOGS - These should ALWAYS run
+  console.log('=== LESSON PAGE DEBUG ===')
+  console.log('Params:', params)
+  console.log('User:', user?.id)
+  console.log('Loading:', loading)
+  console.log('Personalization data:', personalizationData)
+  console.log('Has personalized:', hasPersonalized())
+  console.log('========================')
+
   const [lessonData, setLessonData] = useState(null)
   const [sentencesDB, setSentencesDB] = useState(null)
   const [loadingLesson, setLoadingLesson] = useState(true)
@@ -30,6 +41,8 @@ export default function LessonPage({ params }) {
 
   // Load lesson data
   useEffect(() => {
+    console.log('Loading lesson data for:', paddedId)
+    
     const loadLessonData = async () => {
       try {
         // Dynamic imports for lesson data
@@ -37,6 +50,9 @@ export default function LessonPage({ params }) {
           import(`../../../data/courses/en-es/lessons/lesson-${paddedId}.json`),
           import(`../../../data/courses/en-es/sentences.json`)
         ])
+        
+        console.log('Lesson module loaded:', lessonModule.default)
+        console.log('Sentences loaded:', sentencesModule.default)
         
         setLessonData(lessonModule.default)
         setSentencesDB(sentencesModule.default)
@@ -54,16 +70,20 @@ export default function LessonPage({ params }) {
 
   // Check access and redirect if necessary
   useEffect(() => {
+    console.log('Access check - loading:', loading, 'loadingLesson:', loadingLesson)
+    
     if (loading || loadingLesson) return
 
     // Redirect to login if no user
     if (!user) {
+      console.log('No user, redirecting to login')
       router.push('/login')
       return
     }
 
     // Check if user can access this lesson
     if (!canAccessLesson(lessonId)) {
+      console.log('Cannot access lesson', lessonId, 'redirecting to lesson 1')
       // Redirect to their current lesson or lesson 1
       router.push('/lessons/1')
       return
@@ -71,6 +91,7 @@ export default function LessonPage({ params }) {
 
     // Special case: redirect to personalization after lesson 5
     if (lessonId === 6 && !hasPersonalized()) {
+      console.log('Lesson 6 but not personalized, redirecting to /personalize')
       router.push('/personalize')
       return
     }
@@ -83,26 +104,37 @@ export default function LessonPage({ params }) {
 
   // Helper to get sentences for a section with personalization
   const getSectionSentences = (sectionKey) => {
+    console.log('Getting section sentences for:', sectionKey)
+    console.log('PersonalizationData in getSectionSentences:', personalizationData)
+    
     if (!lessonData || !sentencesDB) return []
     
     const section = lessonData.sections[sectionKey]
     return section.sentence_ids.map(id => {
       const sentence = sentencesDB[id.toString()]
       
+      console.log(`Processing sentence ${id}:`, sentence)
+      
       // Apply personalization if available
       if (personalizationData && sentence.variables) {
+        console.log('Applying personalization to sentence:', sentence.id, sentence.variables)
+        
         let personalizedTarget = sentence.target
         let personalizedNative = sentence.native
         
         // Replace variables with personalized data
         sentence.variables.forEach(variable => {
           const value = personalizationData[variable]
+          console.log(`Replacing {${variable}} with:`, value)
+          
           if (value) {
             const placeholder = `{${variable}}`
             personalizedTarget = personalizedTarget.replace(placeholder, value)
             personalizedNative = personalizedNative.replace(placeholder, value)
           }
         })
+        
+        console.log('Personalized result:', { personalizedTarget, personalizedNative })
         
         return {
           ...sentence,
@@ -111,6 +143,7 @@ export default function LessonPage({ params }) {
         }
       }
       
+      console.log('No personalization applied to sentence:', sentence.id)
       return sentence
     })
   }
@@ -129,8 +162,32 @@ export default function LessonPage({ params }) {
     }
   }
 
+  // Test button function
+  const testDBConnection = async () => {
+    console.log('Testing DB connection...')
+    console.log('Current user:', user)
+    
+    if (!user) {
+      console.log('No user found')
+      return
+    }
+    
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('profile_data')
+        .eq('user_id', user.id)
+        .single()
+      
+      console.log('Manual DB check result:', { data, error })
+    } catch (err) {
+      console.log('Error in manual DB check:', err)
+    }
+  }
+
   // Loading states
   if (loading || loadingLesson) {
+    console.log('Showing loading state')
     return (
       <div className={styles.lessonContainer}>
         <div className={styles.loading}>
@@ -143,6 +200,7 @@ export default function LessonPage({ params }) {
 
   // No lesson data
   if (!lessonData || !sentencesDB) {
+    console.log('No lesson data found')
     return (
       <div className={styles.lessonContainer}>
         <div className={styles.error}>
@@ -152,6 +210,8 @@ export default function LessonPage({ params }) {
       </div>
     )
   }
+
+  console.log('Rendering lesson page with data')
 
   return (
     <div className={styles.lessonContainer}>
@@ -165,7 +225,8 @@ export default function LessonPage({ params }) {
           </div>
         )}
       </div>
-      
+
+     
       {/* Section 1: Listen and Read */}
       <Section 
         title="Listen and Read"
