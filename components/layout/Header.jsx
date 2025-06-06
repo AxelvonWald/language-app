@@ -85,7 +85,7 @@ export default function Header() {
     <header className={styles.header}>
       <div className={styles.container}>
         <Link href="/" className={styles.logo}>
-          Language App
+          Nathan's Language App
         </Link>
         
         <nav className={styles.nav}>
