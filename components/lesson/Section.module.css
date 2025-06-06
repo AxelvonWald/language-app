@@ -48,10 +48,6 @@
   border: 1px solid var(--border-secondary);
 }
 
-.sentenceTable {
-  /* This will be handled by the SentenceTable component styles */
-}
-
 /* Mobile responsiveness */
 @media (max-width: 768px) {
   .section {
