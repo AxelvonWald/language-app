@@ -20,7 +20,8 @@ export default function LessonPage({ params }) {
     canAccessLesson,
     hasPersonalized,
     isLessonCompleted,
-    completeLesson
+    completeLesson,
+    isApproved
   } = useProgress()
 
   // DEBUG LOGS - These should ALWAYS run
@@ -81,6 +82,13 @@ export default function LessonPage({ params }) {
       return
     }
 
+    // Redirect to pending page if not approved
+    if (!isApproved()) {
+      console.log('User not approved, redirecting to pending')
+      router.push('/pending')
+      return
+    }
+
     // Check if user can access this lesson
     if (!canAccessLesson(lessonId)) {
       console.log('Cannot access lesson', lessonId, 'redirecting to lesson 1')
@@ -95,7 +103,7 @@ export default function LessonPage({ params }) {
       router.push('/personalize')
       return
     }
-  }, [user, loading, loadingLesson, lessonId, canAccessLesson, hasPersonalized, router])
+  }, [user, loading, loadingLesson, lessonId, canAccessLesson, hasPersonalized, isApproved, router])
 
   // Dynamic audio path builder
   const getAudioPath = (fileName) => {
@@ -162,28 +170,7 @@ export default function LessonPage({ params }) {
     }
   }
 
-  // Test button function
-  const testDBConnection = async () => {
-    console.log('Testing DB connection...')
-    console.log('Current user:', user)
-    
-    if (!user) {
-      console.log('No user found')
-      return
-    }
-    
-    try {
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .select('profile_data')
-        .eq('user_id', user.id)
-        .single()
-      
-      console.log('Manual DB check result:', { data, error })
-    } catch (err) {
-      console.log('Error in manual DB check:', err)
-    }
-  }
+
 
   // Loading states
   if (loading || loadingLesson) {
@@ -226,7 +213,8 @@ export default function LessonPage({ params }) {
         )}
       </div>
 
-     
+
+      
       {/* Section 1: Listen and Read */}
       <Section 
         title="Listen and Read"

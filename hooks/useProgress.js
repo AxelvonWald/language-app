@@ -9,6 +9,7 @@ export function useProgress() {
   const [loading, setLoading] = useState(true);
   const [personalizationData, setPersonalizationData] = useState(null);
   const [userProgress, setUserProgress] = useState([]);
+  const [userStatus, setUserStatus] = useState('pending'); // New: track approval status
 
   // Initialize auth state and load user data
   useEffect(() => {
@@ -37,6 +38,7 @@ export function useProgress() {
           // Clear data when user logs out
           setPersonalizationData(null);
           setUserProgress([]);
+          setUserStatus('pending');
         }
         
         setLoading(false);
@@ -49,31 +51,34 @@ export function useProgress() {
   // Load user's personalization data and progress
   const loadUserData = async (userId) => {
     try {
-      // Load personalization data
+      // Load profile data and status
       const { data: profileData, error: profileError } = await supabase
         .from('user_profiles')
-        .select('profile_data')
+        .select('profile_data, user_status')
         .eq('user_id', userId)
         .single();
 
       if (profileError && profileError.code !== 'PGRST116') {
         console.error('Error loading profile:', profileError);
-      } else if (profileData?.profile_data) {
+      } else if (profileData) {
         setPersonalizationData(profileData.profile_data);
+        setUserStatus(profileData.user_status || 'pending');
       }
 
-      // Load progress data
-      const { data: progressData, error: progressError } = await supabase
-        .from('user_progress')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('course_id', 'en-es')
-        .order('lesson_id');
+      // Only load progress if user is approved
+      if (profileData?.user_status === 'approved') {
+        const { data: progressData, error: progressError } = await supabase
+          .from('user_progress')
+          .select('*')
+          .eq('user_id', userId)
+          .eq('course_id', 'en-es')
+          .order('lesson_id');
 
-      if (progressError) {
-        console.error('Error loading progress:', progressError);
-      } else {
-        setUserProgress(progressData || []);
+        if (progressError) {
+          console.error('Error loading progress:', progressError);
+        } else {
+          setUserProgress(progressData || []);
+        }
       }
 
     } catch (error) {
@@ -89,14 +94,14 @@ export function useProgress() {
       // First, check if profile exists
       const { data: existingProfile } = await supabase
         .from('user_profiles')
-        .select('user_id')
+        .select('user_id, user_status')
         .eq('user_id', user.id)
         .single();
 
       let result;
       
       if (existingProfile) {
-        // Update existing profile
+        // Update existing profile, preserve user_status
         result = await supabase
           .from('user_profiles')
           .update({ 
@@ -105,12 +110,13 @@ export function useProgress() {
           })
           .eq('user_id', user.id);
       } else {
-        // Insert new profile
+        // Insert new profile with pending status
         result = await supabase
           .from('user_profiles')
           .insert({
             user_id: user.id,
-            profile_data: formData
+            profile_data: formData,
+            user_status: 'pending'
           });
       }
 
@@ -122,11 +128,6 @@ export function useProgress() {
       // Update local state
       setPersonalizationData(formData);
       
-      // Also update the user's has_personalized flag
-      await supabase.auth.updateUser({
-        data: { has_personalized: true }
-      });
-
       return true;
     } catch (error) {
       console.error('Error in savePersonalization:', error);
@@ -139,9 +140,14 @@ export function useProgress() {
     return !!personalizationData;
   };
 
+  // Check if user is approved to access lessons
+  const isApproved = () => {
+    return userStatus === 'approved';
+  };
+
   // Get the highest lesson the user can access
   const getMaxAccessibleLesson = () => {
-    if (!user) return 1;
+    if (!user || !isApproved()) return 0; // No access if not approved
     
     // If not personalized, can only access up to lesson 5
     if (!hasPersonalized()) {
@@ -160,6 +166,7 @@ export function useProgress() {
 
   // Check if user can access a specific lesson
   const canAccessLesson = (lessonId) => {
+    if (!isApproved()) return false; // Must be approved
     return lessonId <= getMaxAccessibleLesson();
   };
 
@@ -170,7 +177,7 @@ export function useProgress() {
 
   // Mark a lesson as completed
   const completeLesson = async (lessonId) => {
-    if (!user) return false;
+    if (!user || !isApproved()) return false;
 
     try {
       // Check if already completed
@@ -221,8 +228,10 @@ export function useProgress() {
     loading,
     personalizationData,
     userProgress,
+    userStatus, // New: expose user status
     savePersonalization,
     hasPersonalized,
+    isApproved, // New: check if user is approved
     canAccessLesson,
     isLessonCompleted,
     completeLesson,
