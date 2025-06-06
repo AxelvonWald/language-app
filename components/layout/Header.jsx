@@ -76,7 +76,7 @@ export default function Header() {
         <div className={styles.container}>
           <Link href="/" className={styles.logo}>
             <img
-              src="/logo.png"
+              src="/logo.svg"
               alt="Language App"
               className={styles.logoImage}
             />
@@ -95,7 +95,7 @@ export default function Header() {
       <div className={styles.container}>
         <Link href="/" className={styles.logo}>
           <img
-            src="/logo.png"
+            src="/logo.svg"
             alt="Language App"
             className={styles.logoImage}
           />
