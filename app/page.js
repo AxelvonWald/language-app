@@ -7,7 +7,7 @@ export default function Home() {
     <div className={styles.page}>
       <main className={styles.main}>
         <div className={styles.hero}>
-          <h1 className={styles.title}>Welcome to Language Learning</h1>
+          <h1 className={styles.title}>Welcome to Iona Language App</h1>
           <p className={styles.subtitle}>
             Master Spanish with our comprehensive A1 course. Learn at your own pace with personalized lessons designed just for you.
           </p>

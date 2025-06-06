@@ -77,10 +77,10 @@ export default function Header() {
           <Link href="/" className={styles.logo}>
             <img
               src="/logo.svg"
-              alt="Language App"
+              alt="Iona Language App"
               className={styles.logoImage}
             />
-            Language App
+            Iona Language App
           </Link>
           <nav className={styles.nav}>
             <div className={styles.loading}>Loading...</div>
@@ -96,10 +96,10 @@ export default function Header() {
         <Link href="/" className={styles.logo}>
           <img
             src="/logo.svg"
-            alt="Language App"
+            alt="Iona Language App"
             className={styles.logoImage}
           />
-          Language App
+          Iona Language App
         </Link>
 
         <nav className={styles.nav}>

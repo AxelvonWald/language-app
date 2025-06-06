@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "LangApp - Learn Spanish",
-  description: "English to Spanish A1 course with personalized learning",
+  title: "Iona Language App",
+  description: "English to Spanish A1 course with personalized learning by Iona Language App",
 };
 
 export default function RootLayout({ children }) {
