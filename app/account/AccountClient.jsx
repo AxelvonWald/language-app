@@ -153,15 +153,20 @@ export default function AccountClient({ userData }) {
             Continue Learning
           </button>
           
-          {userData.hasPersonalized && (
-            <button
-              onClick={() => router.push('/personalize')}
-              className={styles.editProfileButton}
-            >
-              <span className={styles.buttonIcon}>✏️</span>
-              Edit Profile
-            </button>
-          )}
+          <div className={styles.supportNote}>
+            <span className={styles.supportIcon}>📧</span>
+            <div className={styles.supportText}>
+              <strong>Need to update your profile?</strong>
+              <br />
+              Contact us at{' '}
+              <a 
+                href="mailto:support@languageapp.com" 
+                className={styles.supportEmail}
+              >
+                nathan@primordialedge.com
+              </a>
+            </div>
+          </div>
           
           <button
             onClick={handleLogout}
