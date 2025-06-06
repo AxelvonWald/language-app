@@ -1,11 +1,6 @@
 /* components/layout/Header.module.css */
 
 .header {
-  background: linear-gradient(
-    135deg, 
-    rgba(15, 23, 42, 0.95) 0%, 
-    rgba(30, 41, 59, 0.95) 100%
-  ), url('/wallpaper.png');
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
@@ -14,7 +9,6 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  backdrop-filter: blur(10px);
 }
 
 .container {
