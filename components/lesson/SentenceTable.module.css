@@ -4,63 +4,69 @@
   width: 100%;
   border-collapse: collapse;
   margin-top: 1rem;
-  background: white;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
   border-radius: 0.75rem;
   overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.sentenceTable th {
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+.tableHeader {
+  background: linear-gradient(135deg, var(--bg-tertiary) 0%, #475569 100%);
   padding: 1rem 1.25rem;
   text-align: left;
   font-weight: 600;
-  color: #374151;
+  color: var(--text-primary);
   font-size: 0.875rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  border-bottom: 2px solid #e5e7eb;
+  border-bottom: 2px solid var(--border-secondary);
 }
 
-.sentenceTable td {
+.targetCell,
+.nativeCell {
   padding: 1rem 1.25rem;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--border-primary);
   vertical-align: top;
+  transition: background-color 0.15s ease;
 }
 
-.sentenceTable tr:last-child td {
+.sentenceRow:last-child .targetCell,
+.sentenceRow:last-child .nativeCell {
   border-bottom: none;
 }
 
-.sentenceTable tbody tr:hover {
-  background-color: #fafbfc;
+.sentenceRow:hover .targetCell,
+.sentenceRow:hover .nativeCell {
+  background-color: rgba(59, 130, 246, 0.05);
 }
 
 .targetSentence {
   font-weight: 600;
-  color: #1f2937;
+  color: var(--text-primary);
   font-size: 1.1rem;
   line-height: 1.5;
   font-family: var(--font-geist-sans);
+  display: block;
 }
 
 .nativeSentence {
-  color: #6b7280;
+  color: var(--text-secondary);
   font-size: 1rem;
   line-height: 1.5;
   font-family: var(--font-geist-sans);
+  display: block;
 }
 
-.sentenceRow {
-  transition: background-color 0.15s ease;
-}
-
-.sentenceNumber {
-  color: #9ca3af;
-  font-size: 0.875rem;
-  font-weight: 500;
-  width: 3rem;
+.noSentences {
   text-align: center;
+  padding: 2rem;
+  color: var(--text-muted);
+  font-style: italic;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 0.75rem;
+  margin-top: 1rem;
 }
 
 /* Mobile responsiveness */
@@ -69,13 +75,14 @@
     font-size: 0.9rem;
   }
   
-  .sentenceTable th,
-  .sentenceTable td {
+  .tableHeader {
     padding: 0.75rem 1rem;
+    font-size: 0.8rem;
   }
   
-  .sentenceTable th {
-    font-size: 0.8rem;
+  .targetCell,
+  .nativeCell {
+    padding: 0.75rem 1rem;
   }
   
   .targetSentence {
@@ -85,16 +92,15 @@
   .nativeSentence {
     font-size: 0.9rem;
   }
-  
-  .sentenceNumber {
-    width: 2rem;
-    font-size: 0.8rem;
-  }
 }
 
 @media (max-width: 480px) {
-  .sentenceTable th,
-  .sentenceTable td {
+  .tableHeader {
+    padding: 0.625rem 0.75rem;
+  }
+  
+  .targetCell,
+  .nativeCell {
     padding: 0.625rem 0.75rem;
   }
   
@@ -124,24 +130,43 @@
     left: -9999px;
   }
   
-  .sentenceTable tr {
-    border: 1px solid #e5e7eb;
+  .sentenceRow {
+    border: 1px solid var(--border-primary);
     border-radius: 0.5rem;
     margin-bottom: 0.5rem;
     padding: 0.75rem;
+    background: var(--bg-secondary);
   }
   
-  .sentenceTable td {
+  .targetCell,
+  .nativeCell {
     border: none;
-    padding: 0.25rem 0;
+    padding: 0.5rem 0;
     position: relative;
+    display: block;
   }
   
-  .sentenceTable td:before {
+  .targetCell::before {
     content: attr(data-label) ": ";
     font-weight: 600;
-    color: #374151;
+    color: var(--text-primary);
     display: inline-block;
     width: 5rem;
+    margin-bottom: 0.25rem;
+  }
+  
+  .nativeCell::before {
+    content: attr(data-label) ": ";
+    font-weight: 600;
+    color: var(--text-primary);
+    display: inline-block;
+    width: 5rem;
+    margin-bottom: 0.25rem;
+  }
+  
+  .targetSentence,
+  .nativeSentence {
+    display: inline;
+    margin-left: 0;
   }
 }

@@ -1,9 +1,11 @@
 /* app/lessons/[id]/Lesson.module.css */
 
 .lessonContainer {
-  max-width: 800px;
+  max-width: 1000px;
   margin: 0 auto;
-  padding: 2rem 1rem;
+  padding: 2rem;
+  background-color: var(--bg-primary);
+  min-height: 100vh;
 }
 
 .lessonHeader {
@@ -12,93 +14,43 @@
   justify-content: space-between;
   margin-bottom: 2rem;
   padding-bottom: 1rem;
-  border-bottom: 2px solid #e5e7eb;
+  border-bottom: 1px solid var(--border-primary);
 }
 
 .lessonTitle {
-  color: #1f2937;
-  font-size: 1.875rem;
+  font-size: 2rem;
   font-weight: 700;
+  color: var(--text-primary);
   margin: 0;
+  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .completionBadge {
-  background-color: #10b981;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
   color: white;
   padding: 0.5rem 1rem;
   border-radius: 2rem;
   font-size: 0.875rem;
   font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
 }
 
 .section {
-  background: white;
-  border-radius: 1rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 12px;
   padding: 2rem;
   margin-bottom: 2rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  border: 1px solid #f3f4f6;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
 }
 
-.sectionTitle {
-  color: #374151;
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin-bottom: 0.75rem;
-}
-
-.sectionInstruction {
-  color: #6b7280;
-  font-size: 1rem;
-  margin-bottom: 1.5rem;
-  font-style: italic;
-  padding: 1rem;
-  background-color: #f9fafb;
-  border-radius: 0.5rem;
-  border-left: 4px solid #3b82f6;
-}
-
-.audioSection {
-  margin-bottom: 1.5rem;
-}
-
-.sentenceTable {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 1rem;
-}
-
-.sentenceTable th {
-  background-color: #f8fafc;
-  padding: 1rem;
-  text-align: left;
-  font-weight: 600;
-  color: #374151;
-  border-bottom: 2px solid #e5e7eb;
-}
-
-.sentenceTable td {
-  padding: 1rem;
-  border-bottom: 1px solid #f3f4f6;
-  vertical-align: top;
-}
-
-.sentenceTable tr:hover {
-  background-color: #f8fafc;
-}
-
-.targetSentence {
-  font-weight: 600;
-  color: #1f2937;
-  font-size: 1.1rem;
-}
-
-.nativeSentence {
-  color: #6b7280;
-  font-size: 1rem;
+.section:hover {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  border-color: var(--border-secondary);
 }
 
 .loading {
@@ -106,45 +58,48 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 400px;
-  color: #6b7280;
+  padding: 4rem;
+  color: var(--text-secondary);
 }
 
 .loadingSpinner {
-  width: 2rem;
-  height: 2rem;
-  border: 3px solid #e5e7eb;
-  border-top: 3px solid #3b82f6;
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--border-primary);
+  border-top: 3px solid var(--primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 1rem;
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+.error {
+  background: var(--bg-secondary);
+  border: 1px solid var(--error);
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-primary);
 }
 
-.error {
-  text-align: center;
-  padding: 2rem;
-  background-color: #fef2f2;
-  border: 1px solid #fecaca;
-  border-radius: 0.75rem;
-  color: #dc2626;
-  margin: 2rem 0;
+.error h2 {
+  color: var(--error);
+  margin-bottom: 1rem;
+}
+
+.error p {
+  color: var(--text-secondary);
 }
 
 /* Mobile responsiveness */
 @media (max-width: 768px) {
   .lessonContainer {
-    padding: 1rem 0.75rem;
+    padding: 1rem;
   }
   
   .lessonHeader {
     flex-direction: column;
+    align-items: flex-start;
     gap: 1rem;
-    text-align: center;
   }
   
   .lessonTitle {
@@ -153,37 +108,11 @@
   
   .section {
     padding: 1.5rem;
-    margin-bottom: 1.5rem;
-  }
-  
-  .sectionTitle {
-    font-size: 1.25rem;
-  }
-  
-  .sentenceTable th,
-  .sentenceTable td {
-    padding: 0.75rem 0.5rem;
-  }
-  
-  .targetSentence {
-    font-size: 1rem;
-  }
-  
-  .nativeSentence {
-    font-size: 0.9rem;
   }
 }
 
-/* Print styles */
-@media print {
-  .lessonContainer {
-    max-width: none;
-    padding: 0;
-  }
-  
-  .section {
-    box-shadow: none;
-    border: 1px solid #000;
-    break-inside: avoid;
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
 }
