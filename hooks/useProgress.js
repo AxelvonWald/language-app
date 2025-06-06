@@ -3,17 +3,26 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
+import { useCourseFlow } from './useCourseFlow';
 
 export function useProgress() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [personalizationData, setPersonalizationData] = useState(null);
   const [userProgress, setUserProgress] = useState([]);
-  const [userStatus, setUserStatus] = useState('pending'); // New: track approval status
+  const [userStatus, setUserStatus] = useState('pending');
+  
+  const { 
+    courseFlow, 
+    getNextStep, 
+    getPreviousStep, 
+    getStepUrl, 
+    canAccessStep,
+    loading: flowLoading 
+  } = useCourseFlow();
 
   // Initialize auth state and load user data
   useEffect(() => {
-    // Get initial session
     const getInitialSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       setUser(session?.user || null);
@@ -27,7 +36,6 @@ export function useProgress() {
 
     getInitialSession();
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         setUser(session?.user || null);
@@ -35,7 +43,6 @@ export function useProgress() {
         if (session?.user) {
           await loadUserData(session.user.id);
         } else {
-          // Clear data when user logs out
           setPersonalizationData(null);
           setUserProgress([]);
           setUserStatus('pending');
@@ -51,7 +58,6 @@ export function useProgress() {
   // Load user's personalization data and progress
   const loadUserData = async (userId) => {
     try {
-      // Load profile data and status
       const { data: profileData, error: profileError } = await supabase
         .from('user_profiles')
         .select('profile_data, user_status')
@@ -65,7 +71,6 @@ export function useProgress() {
         setUserStatus(profileData.user_status || 'pending');
       }
 
-      // Only load progress if user is approved
       if (profileData?.user_status === 'approved') {
         const { data: progressData, error: progressError } = await supabase
           .from('user_progress')
@@ -87,11 +92,10 @@ export function useProgress() {
   };
 
   // Save personalization data to Supabase
-  const savePersonalization = async (formData) => {
+  const savePersonalizationData = async (formData) => {
     if (!user) return false;
 
     try {
-      // First, check if profile exists
       const { data: existingProfile } = await supabase
         .from('user_profiles')
         .select('user_id, user_status')
@@ -101,7 +105,6 @@ export function useProgress() {
       let result;
       
       if (existingProfile) {
-        // Update existing profile, preserve user_status
         result = await supabase
           .from('user_profiles')
           .update({ 
@@ -110,7 +113,6 @@ export function useProgress() {
           })
           .eq('user_id', user.id);
       } else {
-        // Insert new profile with pending status
         result = await supabase
           .from('user_profiles')
           .insert({
@@ -125,12 +127,10 @@ export function useProgress() {
         return false;
       }
 
-      // Update local state
       setPersonalizationData(formData);
-      
       return true;
     } catch (error) {
-      console.error('Error in savePersonalization:', error);
+      console.error('Error in savePersonalizationData:', error);
       return false;
     }
   };
@@ -145,29 +145,93 @@ export function useProgress() {
     return userStatus === 'approved';
   };
 
-  // Get the highest lesson the user can access
-  const getMaxAccessibleLesson = () => {
-    if (!user || !isApproved()) return 0; // No access if not approved
+  // Get completed steps for flow navigation
+  const getCompletedSteps = () => {
+    const steps = [];
     
-    // If not personalized, can only access up to lesson 5
-    if (!hasPersonalized()) {
-      return Math.min(5, Math.max(1, getHighestCompletedLesson() + 1));
+    // Add completed lessons
+    userProgress.forEach(progress => {
+      if (progress.status === 'completed') {
+        steps.push({
+          type: 'lesson',
+          id: progress.lesson_id,
+          stepNumber: progress.lesson_id // This could be enhanced with actual step numbers
+        });
+      }
+    });
+    
+    // Add completed personalization steps
+    if (personalizationData && courseFlow) {
+      // This is a simplified check - you might want to enhance this
+      // to check which specific personalization forms have been completed
+      const hasBasicInfo = personalizationData.name;
+      if (hasBasicInfo) {
+        steps.push({ type: 'personalization', id: 'basic' });
+      }
     }
     
-    // If personalized, can access next lesson after highest completed
-    return Math.max(1, getHighestCompletedLesson() + 1);
+    return steps;
   };
 
-  // Get the highest completed lesson number
-  const getHighestCompletedLesson = () => {
-    if (userProgress.length === 0) return 0;
-    return Math.max(...userProgress.map(p => p.lesson_id));
+  // Get the next accessible step using course flow
+  const getNextAccessibleStep = () => {
+    if (!courseFlow || !isApproved()) return null;
+    
+    const completedSteps = getCompletedSteps();
+    const highestCompletedLessonId = Math.max(0, ...userProgress
+      .filter(p => p.status === 'completed')
+      .map(p => p.lesson_id)
+    );
+    
+    // Find the next lesson or personalization step
+    const nextLessonId = highestCompletedLessonId + 1;
+    
+    // Check if there's a personalization step before the next lesson
+    if (courseFlow.flow) {
+      const nextStep = courseFlow.flow.find(step => {
+        if (step.type === 'lesson' && step.id === nextLessonId) {
+          return true;
+        }
+        if (step.type === 'personalization') {
+          // Check if this personalization step should come next
+          return !completedSteps.some(completed => 
+            completed.type === 'personalization' && completed.id === step.id
+          );
+        }
+        return false;
+      });
+      
+      return nextStep;
+    }
+    
+    return { type: 'lesson', id: nextLessonId };
   };
 
-  // Check if user can access a specific lesson
+  // Check if user can access a specific lesson (enhanced with flow)
   const canAccessLesson = (lessonId) => {
-    if (!isApproved()) return false; // Must be approved
-    return lessonId <= getMaxAccessibleLesson();
+    if (!isApproved()) return false;
+    
+    if (!courseFlow) {
+      // Fallback to old logic if flow not loaded
+      const highestCompleted = Math.max(0, ...userProgress
+        .filter(p => p.status === 'completed')
+        .map(p => p.lesson_id)
+      );
+      return lessonId <= highestCompleted + 1;
+    }
+    
+    const completedSteps = getCompletedSteps();
+    return canAccessStep('lesson', lessonId, completedSteps);
+  };
+
+  // Check if user can access a specific personalization form
+  const canAccessPersonalization = (personalizationId) => {
+    if (!isApproved()) return false;
+    
+    if (!courseFlow) return true; // Fallback
+    
+    const completedSteps = getCompletedSteps();
+    return canAccessStep('personalization', personalizationId, completedSteps);
   };
 
   // Check if a lesson is completed
@@ -180,7 +244,6 @@ export function useProgress() {
     if (!user || !isApproved()) return false;
 
     try {
-      // Check if already completed
       if (isLessonCompleted(lessonId)) {
         return true;
       }
@@ -200,7 +263,6 @@ export function useProgress() {
         return false;
       }
 
-      // Update local state
       const newProgress = {
         user_id: user.id,
         course_id: 'en-es',
@@ -210,7 +272,6 @@ export function useProgress() {
       };
       
       setUserProgress(prev => [...prev, newProgress]);
-      
       return true;
     } catch (error) {
       console.error('Error in completeLesson:', error);
@@ -218,25 +279,39 @@ export function useProgress() {
     }
   };
 
-  // Get current lesson (next incomplete lesson)
-  const getCurrentLesson = () => {
-    return getMaxAccessibleLesson();
+  // Get current step info
+  const getCurrentStep = () => {
+    return getNextAccessibleStep();
+  };
+
+  // Navigation helpers using course flow
+  const getNextStepUrl = (currentType, currentId) => {
+    const nextStep = getNextStep(currentType, currentId);
+    return getStepUrl(nextStep);
+  };
+
+  const getPreviousStepUrl = (currentType, currentId) => {
+    const prevStep = getPreviousStep(currentType, currentId);
+    return getStepUrl(prevStep);
   };
 
   return {
     user,
-    loading,
+    loading: loading || flowLoading,
     personalizationData,
     userProgress,
-    userStatus, // New: expose user status
-    savePersonalization,
+    userStatus,
+    savePersonalizationData,
     hasPersonalized,
-    isApproved, // New: check if user is approved
+    isApproved,
     canAccessLesson,
+    canAccessPersonalization,
     isLessonCompleted,
     completeLesson,
-    getCurrentLesson,
-    getMaxAccessibleLesson,
-    getHighestCompletedLesson
+    getCurrentStep,
+    getNextStepUrl,
+    getPreviousStepUrl,
+    getCompletedSteps,
+    courseFlow
   };
 }

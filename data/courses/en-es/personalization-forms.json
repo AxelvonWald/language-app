@@ -1,0 +1,328 @@
+{
+  "basic": {
+    "id": "basic",
+    "title": "Tell us about yourself",
+    "description": "Help us personalize your Spanish learning experience with your basic information.",
+    "icon": "👋",
+    "fields": [
+      {
+        "id": "name",
+        "type": "text",
+        "label": "What's your name?",
+        "placeholder": "e.g., Maria",
+        "required": true,
+        "validation": {
+          "minLength": 1,
+          "maxLength": 50
+        }
+      },
+      {
+        "id": "age",
+        "type": "number",
+        "label": "How old are you?",
+        "placeholder": "25",
+        "required": false,
+        "validation": {
+          "min": 13,
+          "max": 120
+        }
+      },
+      {
+        "id": "country",
+        "type": "text",
+        "label": "Which country are you from?",
+        "placeholder": "e.g., New Zealand, Brazil, Japan",
+        "required": true,
+        "validation": {
+          "minLength": 2,
+          "maxLength": 50
+        }
+      },
+      {
+        "id": "gender",
+        "type": "select",
+        "label": "Gender (for grammar personalization)",
+        "required": false,
+        "options": [
+          { "value": "male", "label": "Male" },
+          { "value": "female", "label": "Female" },
+          { "value": "other", "label": "Other" },
+          { "value": "prefer_not_say", "label": "Prefer not to say" }
+        ]
+      }
+    ]
+  },
+  "family": {
+    "id": "family",
+    "title": "Family & Relationships",
+    "description": "Tell us about your family so we can create personalized conversations about the people you care about.",
+    "icon": "👨‍👩‍👧‍👦",
+    "fields": [
+      {
+        "id": "marital_status",
+        "type": "select",
+        "label": "Relationship status",
+        "required": false,
+        "options": [
+          { "value": "single", "label": "Single" },
+          { "value": "married", "label": "Married" },
+          { "value": "in_relationship", "label": "In a relationship" },
+          { "value": "divorced", "label": "Divorced" },
+          { "value": "widowed", "label": "Widowed" }
+        ]
+      },
+      {
+        "id": "partner_name",
+        "type": "text",
+        "label": "Partner's name (if applicable)",
+        "placeholder": "e.g., Carlos, Sarah",
+        "required": false,
+        "validation": {
+          "maxLength": 50
+        }
+      },
+      {
+        "id": "children_count",
+        "type": "number",
+        "label": "How many children do you have?",
+        "placeholder": "0",
+        "required": false,
+        "validation": {
+          "min": 0,
+          "max": 20
+        }
+      },
+      {
+        "id": "children_names",
+        "type": "text",
+        "label": "Children's names (comma separated)",
+        "placeholder": "e.g., Sofia, Diego, Emma",
+        "required": false,
+        "validation": {
+          "maxLength": 200
+        }
+      },
+      {
+        "id": "family_size",
+        "type": "number",
+        "label": "Total family size (including yourself)",
+        "placeholder": "3",
+        "required": false,
+        "validation": {
+          "min": 1,
+          "max": 50
+        }
+      }
+    ]
+  },
+  "work": {
+    "id": "work",
+    "title": "Work & Career",
+    "description": "Share your professional life so we can include work-related vocabulary and scenarios in your lessons.",
+    "icon": "💼",
+    "fields": [
+      {
+        "id": "job_title",
+        "type": "text",
+        "label": "What's your job title?",
+        "placeholder": "e.g., teacher, engineer, student, retired",
+        "required": false,
+        "validation": {
+          "maxLength": 100
+        }
+      },
+      {
+        "id": "industry",
+        "type": "select",
+        "label": "What industry do you work in?",
+        "required": false,
+        "options": [
+          { "value": "technology", "label": "Technology" },
+          { "value": "healthcare", "label": "Healthcare" },
+          { "value": "education", "label": "Education" },
+          { "value": "finance", "label": "Finance" },
+          { "value": "retail", "label": "Retail" },
+          { "value": "manufacturing", "label": "Manufacturing" },
+          { "value": "government", "label": "Government" },
+          { "value": "non_profit", "label": "Non-profit" },
+          { "value": "student", "label": "Student" },
+          { "value": "retired", "label": "Retired" },
+          { "value": "unemployed", "label": "Unemployed" },
+          { "value": "other", "label": "Other" }
+        ]
+      },
+      {
+        "id": "work_schedule",
+        "type": "select",
+        "label": "What's your typical work schedule?",
+        "required": false,
+        "options": [
+          { "value": "full_time", "label": "Full-time (40+ hours/week)" },
+          { "value": "part_time", "label": "Part-time" },
+          { "value": "flexible", "label": "Flexible hours" },
+          { "value": "shift_work", "label": "Shift work" },
+          { "value": "remote", "label": "Remote work" },
+          { "value": "not_applicable", "label": "Not applicable" }
+        ]
+      },
+      {
+        "id": "workplace_size",
+        "type": "select",
+        "label": "How big is your workplace?",
+        "required": false,
+        "options": [
+          { "value": "solo", "label": "I work alone" },
+          { "value": "small", "label": "Small (2-10 people)" },
+          { "value": "medium", "label": "Medium (11-50 people)" },
+          { "value": "large", "label": "Large (51-500 people)" },
+          { "value": "enterprise", "label": "Very large (500+ people)" },
+          { "value": "not_applicable", "label": "Not applicable" }
+        ]
+      }
+    ]
+  },
+  "hobbies": {
+    "id": "hobbies",
+    "title": "Hobbies & Interests",
+    "description": "What do you love doing in your free time? We'll incorporate your interests into conversation practice.",
+    "icon": "🎨",
+    "fields": [
+      {
+        "id": "primary_hobby",
+        "type": "text",
+        "label": "What's your main hobby or interest?",
+        "placeholder": "e.g., reading, cooking, football, photography",
+        "required": true,
+        "validation": {
+          "minLength": 2,
+          "maxLength": 50
+        }
+      },
+      {
+        "id": "sports",
+        "type": "multiselect",
+        "label": "Which sports do you enjoy? (select all that apply)",
+        "required": false,
+        "options": [
+          { "value": "football", "label": "Football/Soccer" },
+          { "value": "basketball", "label": "Basketball" },
+          { "value": "tennis", "label": "Tennis" },
+          { "value": "swimming", "label": "Swimming" },
+          { "value": "running", "label": "Running" },
+          { "value": "cycling", "label": "Cycling" },
+          { "value": "yoga", "label": "Yoga" },
+          { "value": "hiking", "label": "Hiking" },
+          { "value": "none", "label": "I don't play sports" }
+        ]
+      },
+      {
+        "id": "creative_activities",
+        "type": "multiselect",
+        "label": "Creative activities you enjoy?",
+        "required": false,
+        "options": [
+          { "value": "painting", "label": "Painting" },
+          { "value": "drawing", "label": "Drawing" },
+          { "value": "photography", "label": "Photography" },
+          { "value": "music", "label": "Playing music" },
+          { "value": "singing", "label": "Singing" },
+          { "value": "writing", "label": "Writing" },
+          { "value": "crafts", "label": "Arts & crafts" },
+          { "value": "cooking", "label": "Cooking" },
+          { "value": "none", "label": "None of these" }
+        ]
+      },
+      {
+        "id": "weekend_activity",
+        "type": "text",
+        "label": "What's your favorite weekend activity?",
+        "placeholder": "e.g., going to the park, visiting museums, sleeping in",
+        "required": false,
+        "validation": {
+          "maxLength": 100
+        }
+      }
+    ]
+  },
+  "travel": {
+    "id": "travel",
+    "title": "Travel & Culture",
+    "description": "Tell us about your travel experiences and cultural interests to create relevant conversation scenarios.",
+    "icon": "✈️",
+    "fields": [
+      {
+        "id": "travel_frequency",
+        "type": "select",
+        "label": "How often do you travel?",
+        "required": false,
+        "options": [
+          { "value": "never", "label": "I rarely travel" },
+          { "value": "local", "label": "Only locally/domestically" },
+          { "value": "occasional", "label": "Occasionally (1-2 times/year)" },
+          { "value": "frequent", "label": "Frequently (3+ times/year)" },
+          { "value": "very_frequent", "label": "Very frequently (monthly)" }
+        ]
+      },
+      {
+        "id": "dream_destination",
+        "type": "text",
+        "label": "Where would you most like to travel?",
+        "placeholder": "e.g., Spain, Mexico, Argentina, Costa Rica",
+        "required": false,
+        "validation": {
+          "maxLength": 100
+        }
+      },
+      {
+        "id": "spanish_speaking_countries",
+        "type": "multiselect",
+        "label": "Which Spanish-speaking countries interest you?",
+        "required": false,
+        "options": [
+          { "value": "spain", "label": "Spain" },
+          { "value": "mexico", "label": "Mexico" },
+          { "value": "argentina", "label": "Argentina" },
+          { "value": "colombia", "label": "Colombia" },
+          { "value": "peru", "label": "Peru" },
+          { "value": "chile", "label": "Chile" },
+          { "value": "costa_rica", "label": "Costa Rica" },
+          { "value": "guatemala", "label": "Guatemala" },
+          { "value": "ecuador", "label": "Ecuador" },
+          { "value": "uruguay", "label": "Uruguay" },
+          { "value": "other", "label": "Other" }
+        ]
+      },
+      {
+        "id": "cultural_interests",
+        "type": "multiselect",
+        "label": "What aspects of Spanish culture interest you?",
+        "required": false,
+        "options": [
+          { "value": "food", "label": "Food & cuisine" },
+          { "value": "music", "label": "Music & dance" },
+          { "value": "art", "label": "Art & museums" },
+          { "value": "history", "label": "History" },
+          { "value": "festivals", "label": "Festivals & celebrations" },
+          { "value": "architecture", "label": "Architecture" },
+          { "value": "nature", "label": "Nature & landscapes" },
+          { "value": "business", "label": "Business culture" }
+        ]
+      },
+      {
+        "id": "travel_style",
+        "type": "select",
+        "label": "What's your preferred travel style?",
+        "required": false,
+        "options": [
+          { "value": "budget", "label": "Budget traveler" },
+          { "value": "mid_range", "label": "Mid-range comfort" },
+          { "value": "luxury", "label": "Luxury travel" },
+          { "value": "adventure", "label": "Adventure/backpacking" },
+          { "value": "cultural", "label": "Cultural immersion" },
+          { "value": "relaxation", "label": "Relaxation/beach" },
+          { "value": "business", "label": "Business travel" }
+        ]
+      }
+    ]
+  }
+}
