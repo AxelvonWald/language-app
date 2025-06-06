@@ -72,15 +72,7 @@ export default function Header() {
 
   if (loading) {
     return (
-      <header
-        className={styles.header}
-        style={{
-          backgroundImage: `linear-gradient(135deg, rgba(15, 23, 42, 0.4) 0%, rgba(30, 41, 59, 0.4) 100%), url('/wallpaper.png')`, // ← Add this!
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundAttachment: "fixed",
-        }}
-      >
+      <header className={styles.header}>
         <div className={styles.container}>
           <Link href="/" className={styles.logo}>
             <img
@@ -99,15 +91,7 @@ export default function Header() {
   }
 
   return (
-    <header
-      className={styles.header}
-      style={{
-        backgroundImage: `linear-gradient(135deg, rgba(15, 23, 42, 0.4) 0%, rgba(30, 41, 59, 0.4) 100%), url('/wallpaper.png')`, // ← Add this!
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundAttachment: "fixed",
-      }}
-    >
+    <header className={styles.header}>
       <div className={styles.container}>
         <Link href="/" className={styles.logo}>
           <img

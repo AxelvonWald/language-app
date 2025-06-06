@@ -6,23 +6,21 @@
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+  background: var(--bg-primary);
 }
 
 .card {
   background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
-  border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
   padding: 2.5rem;
   width: 100%;
   max-width: 700px;
-  backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
+  transition: all 0.15s ease;
 }
 
 .card:hover {
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
   border-color: var(--border-secondary);
 }
 
@@ -32,27 +30,24 @@
   align-items: center;
   margin-bottom: 2.5rem;
   padding-bottom: 1.5rem;
-  border-bottom: 2px solid var(--border-primary);
+  border-bottom: 1px solid var(--border-primary);
 }
 
 .title {
   font-size: 2.25rem;
-  font-weight: 800;
+  font-weight: 600;
   margin: 0;
-  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--text-primary);
 }
 
 .statusBadge {
-  background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
-  color: white;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
   padding: 0.5rem 1rem;
-  border-radius: 20px;
+  border-radius: 16px;
   font-size: 0.875rem;
-  font-weight: 600;
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+  font-weight: 500;
 }
 
 .section {
@@ -68,7 +63,7 @@
 
 .sectionTitle {
   font-size: 1.5rem;
-  font-weight: 700;
+  font-weight: 600;
   margin-bottom: 1.5rem;
   color: var(--text-primary);
   display: flex;
@@ -93,17 +88,17 @@
   padding: 1rem;
   background: var(--bg-tertiary);
   border: 1px solid var(--border-primary);
-  border-radius: 12px;
-  transition: all 0.2s ease;
+  border-radius: 6px;
+  transition: all 0.15s ease;
 }
 
 .infoItem:hover {
-  background: rgba(59, 130, 246, 0.05);
+  background: var(--bg-secondary);
   border-color: var(--border-secondary);
 }
 
 .label {
-  font-weight: 600;
+  font-weight: 500;
   color: var(--text-secondary);
   font-size: 0.9rem;
   text-transform: uppercase;
@@ -112,14 +107,14 @@
 
 .value {
   color: var(--text-primary);
-  font-weight: 600;
+  font-weight: 500;
   font-size: 1rem;
 }
 
 .personalizationNotice {
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(217, 119, 6, 0.1) 100%);
-  border: 1px solid var(--warning);
-  border-radius: 12px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
+  border-radius: 6px;
   padding: 1.5rem;
   margin-top: 1.5rem;
   display: flex;
@@ -134,8 +129,8 @@
 
 .noticeContent h4 {
   margin: 0 0 0.5rem 0;
-  color: var(--warning);
-  font-weight: 600;
+  color: var(--text-primary);
+  font-weight: 500;
 }
 
 .noticeContent p {
@@ -161,31 +156,27 @@
   padding: 1.5rem;
   background: var(--bg-tertiary);
   border: 1px solid var(--border-primary);
-  border-radius: 12px;
-  transition: all 0.3s ease;
+  border-radius: 6px;
+  transition: all 0.15s ease;
 }
 
 .statItem:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  background: var(--bg-secondary);
   border-color: var(--border-secondary);
 }
 
 .statNumber {
   display: block;
   font-size: 2.5rem;
-  font-weight: 800;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  font-weight: 600;
+  color: var(--text-primary);
   margin-bottom: 0.5rem;
 }
 
 .statLabel {
   font-size: 0.875rem;
   color: var(--text-secondary);
-  font-weight: 600;
+  font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -198,27 +189,25 @@
 
 .progressBar {
   width: 100%;
-  height: 12px;
+  height: 8px;
   background: var(--bg-tertiary);
-  border: 1px solid var(--border-primary);
-  border-radius: 6px;
+  border-radius: 4px;
   overflow: hidden;
   position: relative;
 }
 
 .progressFill {
   height: 100%;
-  background: linear-gradient(90deg, var(--primary) 0%, var(--primary-hover) 100%);
-  border-radius: 6px;
+  background: var(--text-secondary);
+  border-radius: 4px;
   transition: width 0.5s ease;
-  box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
 }
 
 .progressText {
   font-size: 0.875rem;
   color: var(--text-secondary);
   text-align: center;
-  font-weight: 500;
+  font-weight: 400;
 }
 
 .achievementBadge {
@@ -226,9 +215,9 @@
   align-items: center;
   gap: 0.75rem;
   padding: 1rem;
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%);
-  border: 1px solid var(--success);
-  border-radius: 12px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
+  border-radius: 6px;
 }
 
 .achievementIcon {
@@ -236,8 +225,8 @@
 }
 
 .achievementText {
-  color: var(--success);
-  font-weight: 600;
+  color: var(--text-primary);
+  font-weight: 500;
 }
 
 .actions {
@@ -248,37 +237,36 @@
 }
 
 .continueButton {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
-  color: white;
-  border: none;
-  border-radius: 12px;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: 6px;
   padding: 1rem 1.5rem;
   font-size: 1.1rem;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.15s ease;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
 .continueButton:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+  background: var(--bg-secondary);
+  border-color: var(--border-secondary);
 }
 
 .editProfileButton {
   background: var(--bg-tertiary);
   color: var(--text-primary);
   border: 1px solid var(--border-primary);
-  border-radius: 12px;
+  border-radius: 6px;
   padding: 1rem 1.5rem;
   font-size: 1rem;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.15s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -286,9 +274,8 @@
 }
 
 .editProfileButton:hover {
-  background: var(--bg-primary);
+  background: var(--bg-secondary);
   border-color: var(--border-secondary);
-  transform: translateY(-1px);
 }
 
 .supportNote {
@@ -296,9 +283,9 @@
   align-items: flex-start;
   gap: 1rem;
   padding: 1.5rem;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(37, 99, 235, 0.05) 100%);
-  border: 1px solid rgba(59, 130, 246, 0.2);
-  border-radius: 12px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
+  border-radius: 6px;
   text-align: left;
 }
 
@@ -316,31 +303,31 @@
 
 .supportText strong {
   color: var(--text-primary);
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .supportEmail {
-  color: var(--primary-light);
+  color: var(--text-primary);
   text-decoration: none;
-  font-weight: 600;
-  transition: color 0.2s ease;
+  font-weight: 500;
+  transition: color 0.15s ease;
 }
 
 .supportEmail:hover {
-  color: var(--primary);
+  color: var(--text-secondary);
   text-decoration: underline;
 }
 
 .logoutButton {
-  background: rgba(220, 38, 38, 0.1);
-  color: var(--error);
-  border: 1px solid var(--error);
-  border-radius: 12px;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 6px;
   padding: 1rem 1.5rem;
   font-size: 1rem;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.15s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -348,8 +335,9 @@
 }
 
 .logoutButton:hover {
-  background: rgba(220, 38, 38, 0.15);
-  transform: translateY(-1px);
+  background: var(--bg-secondary);
+  border-color: var(--border-secondary);
+  color: var(--text-primary);
 }
 
 .logoutButton:disabled {

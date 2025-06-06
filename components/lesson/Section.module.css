@@ -1,51 +1,43 @@
 /* components/lesson/Section.module.css */
-
 .section {
   background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 2rem;
   margin-bottom: 2rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
+  transition: all 0.15s ease;
 }
 
 .section:hover {
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
   border-color: var(--border-secondary);
 }
 
 .sectionTitle {
   font-size: 1.5rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--text-primary);
   margin: 0 0 1rem 0;
   padding-bottom: 0.5rem;
-  border-bottom: 2px solid var(--primary);
-  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  border-bottom: 1px solid var(--border-primary);
 }
 
 .sectionInstruction {
   color: var(--text-secondary);
   font-size: 1rem;
-  font-style: italic;
   margin-bottom: 1.5rem;
   padding: 1rem;
-  background: rgba(59, 130, 246, 0.05);
-  border: 1px solid rgba(59, 130, 246, 0.1);
-  border-radius: 8px;
-  border-left: 4px solid var(--primary);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
+  border-radius: 6px;
+  border-left: 3px solid var(--text-secondary);
 }
 
 .audioSection {
   margin: 1.5rem 0;
   padding: 1rem;
   background: var(--bg-tertiary);
-  border-radius: 8px;
-  border: 1px solid var(--border-secondary);
+  border-radius: 6px;
+  border: 1px solid var(--border-primary);
 }
 
 /* Mobile responsiveness */

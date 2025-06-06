@@ -1,26 +1,24 @@
 /* components/lesson/SentenceTable.module.css */
-
 .sentenceTable {
   width: 100%;
   border-collapse: collapse;
   margin-top: 1rem;
   background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
-  border-radius: 0.75rem;
+  border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .tableHeader {
-  background: linear-gradient(135deg, var(--bg-tertiary) 0%, #475569 100%);
+  background: var(--bg-tertiary);
   padding: 1rem 1.25rem;
   text-align: left;
-  font-weight: 600;
-  color: var(--text-primary);
+  font-weight: 500;
+  color: var(--text-secondary);
   font-size: 0.875rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  border-bottom: 2px solid var(--border-secondary);
+  border-bottom: 1px solid var(--border-primary);
 }
 
 .targetCell,
@@ -38,11 +36,11 @@
 
 .sentenceRow:hover .targetCell,
 .sentenceRow:hover .nativeCell {
-  background-color: rgba(59, 130, 246, 0.05);
+  background-color: var(--bg-tertiary);
 }
 
 .targetSentence {
-  font-weight: 600;
+  font-weight: 500;
   color: var(--text-primary);
   font-size: 1.1rem;
   line-height: 1.5;
@@ -65,7 +63,7 @@
   font-style: italic;
   background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
-  border-radius: 0.75rem;
+  border-radius: 8px;
   margin-top: 1rem;
 }
 
@@ -132,7 +130,7 @@
   
   .sentenceRow {
     border: 1px solid var(--border-primary);
-    border-radius: 0.5rem;
+    border-radius: 6px;
     margin-bottom: 0.5rem;
     padding: 0.75rem;
     background: var(--bg-secondary);
@@ -148,7 +146,7 @@
   
   .targetCell::before {
     content: attr(data-label) ": ";
-    font-weight: 600;
+    font-weight: 500;
     color: var(--text-primary);
     display: inline-block;
     width: 5rem;
@@ -157,7 +155,7 @@
   
   .nativeCell::before {
     content: attr(data-label) ": ";
-    font-weight: 600;
+    font-weight: 500;
     color: var(--text-primary);
     display: inline-block;
     width: 5rem;
