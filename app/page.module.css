@@ -9,7 +9,31 @@
   padding: 80px;
   gap: 64px;
   font-family: var(--font-geist-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif);
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+  background: linear-gradient(
+    135deg, 
+    rgba(15, 23, 42, 0.85) 0%, 
+    rgba(30, 41, 59, 0.85) 50%, 
+    rgba(51, 65, 85, 0.85) 100%
+  ), url('/wallpaper.png');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  position: relative;
+}
+
+.page::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(
+    circle at 50% 50%, 
+    rgba(59, 130, 246, 0.1) 0%, 
+    transparent 50%
+  );
+  pointer-events: none;
 }
 
 .main {
@@ -19,6 +43,8 @@
   grid-row-start: 2;
   align-items: center;
   text-align: center;
+  position: relative;
+  z-index: 1;
 }
 
 .hero {
@@ -27,6 +53,12 @@
   gap: 24px;
   align-items: center;
   max-width: 600px;
+  background: rgba(30, 41, 59, 0.4);
+  padding: 3rem;
+  border-radius: 20px;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
 .title {
@@ -38,13 +70,15 @@
   -webkit-text-fill-color: transparent;
   line-height: 1.2;
   margin-bottom: 1rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .subtitle {
   font-size: 1.25rem;
-  color: var(--text-secondary);
+  color: rgba(241, 245, 249, 0.9);
   line-height: 1.6;
   max-width: 500px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .cta {
@@ -67,32 +101,34 @@
   border: none;
   cursor: pointer;
   font-size: 1rem;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  backdrop-filter: blur(10px);
 }
 
 .primaryButton:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.5);
   background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
 }
 
 .secondaryButton {
-  background: transparent;
-  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(241, 245, 249, 0.9);
   padding: 12px 32px;
-  border: 1px solid var(--border-primary);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 8px;
   font-weight: 500;
   text-decoration: none;
   transition: all 0.3s ease;
   cursor: pointer;
   font-size: 1rem;
+  backdrop-filter: blur(10px);
 }
 
 .secondaryButton:hover {
-  background: var(--bg-secondary);
-  border-color: var(--border-secondary);
-  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #f1f5f9;
   transform: translateY(-1px);
 }
 
@@ -106,19 +142,21 @@
 }
 
 .feature {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   padding: 24px;
   text-align: center;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(15px);
 }
 
 .feature:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-  border-color: var(--border-secondary);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(30, 41, 59, 0.8);
 }
 
 .featureIcon {
@@ -134,7 +172,7 @@
 }
 
 .featureDescription {
-  color: var(--text-secondary);
+  color: rgba(203, 213, 225, 0.8);
   font-size: 0.9rem;
   line-height: 1.5;
 }
@@ -143,17 +181,19 @@
   grid-row-start: 3;
   display: flex;
   gap: 24px;
-  color: var(--text-muted);
+  color: rgba(148, 163, 184, 0.8);
   font-size: 0.875rem;
+  position: relative;
+  z-index: 1;
 }
 
 .footer a {
-  color: var(--text-muted);
+  color: rgba(148, 163, 184, 0.8);
   transition: color 0.2s ease;
 }
 
 .footer a:hover {
-  color: var(--text-secondary);
+  color: rgba(203, 213, 225, 0.9);
 }
 
 /* Mobile responsiveness */
@@ -161,6 +201,11 @@
   .page {
     padding: 40px 20px;
     gap: 32px;
+    background-attachment: scroll;
+  }
+  
+  .hero {
+    padding: 2rem;
   }
   
   .title {

@@ -1,12 +1,20 @@
 /* components/layout/Header.module.css */
 
 .header {
-  background: #0f172a;
-  border-bottom: 1px solid #334155;
+  background: linear-gradient(
+    135deg, 
+    rgba(15, 23, 42, 0.95) 0%, 
+    rgba(30, 41, 59, 0.95) 100%
+  ), url('/wallpaper.png');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   position: sticky;
   top: 0;
   z-index: 100;
+  backdrop-filter: blur(10px);
 }
 
 .container {
@@ -26,10 +34,20 @@
   text-decoration: none;
   font-family: var(--font-geist-sans);
   transition: color 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.logoImage {
+  height: 32px;
+  width: auto;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
 .logo:hover {
   color: #60a5fa;
+  transform: translateY(-1px);
 }
 
 .nav {
@@ -39,7 +57,7 @@
 }
 
 .navLink {
-  color: #cbd5e1;
+  color: rgba(255, 255, 255, 0.9);
   text-decoration: none;
   font-weight: 500;
   padding: 0.5rem 1rem;
@@ -47,15 +65,17 @@
   transition: all 0.2s ease;
   font-family: var(--font-geist-sans);
   font-size: 0.95rem;
+  backdrop-filter: blur(5px);
 }
 
 .navLink:hover {
   color: #f1f5f9;
-  background-color: #1e293b;
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
 }
 
 .logoutButton {
-  background: #dc2626;
+  background: rgba(220, 38, 38, 0.9);
   border: none;
   cursor: pointer;
   color: white;
@@ -65,21 +85,26 @@
   transition: all 0.2s ease;
   font-family: var(--font-geist-sans);
   font-size: 0.95rem;
+  backdrop-filter: blur(5px);
 }
 
 .logoutButton:hover {
-  background: #b91c1c;
+  background: rgba(185, 28, 28, 0.9);
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(220, 38, 38, 0.3);
 }
 
 .loading {
-  color: #94a3b8;
+  color: rgba(255, 255, 255, 0.7);
   font-size: 0.875rem;
 }
 
 /* Mobile responsiveness */
 @media (max-width: 768px) {
+  .header {
+    background-attachment: scroll;
+  }
+  
   .container {
     padding: 0 0.75rem;
     height: 3.5rem;
@@ -87,6 +112,10 @@
   
   .logo {
     font-size: 1.25rem;
+  }
+  
+  .logoImage {
+    height: 28px;
   }
   
   .nav {
@@ -111,6 +140,6 @@
 }
 
 .logoImage {
-  height: 32px;
+  height: 24px;
   margin-right: 0.5rem;
 }
