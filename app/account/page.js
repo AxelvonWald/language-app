@@ -24,9 +24,15 @@ export default function AccountPage() {
         // Fetch user profile data
         const { data: profile } = await supabase
           .from('user_profiles')
-          .select('profile_data')
+          .select('profile_data, user_status')
           .eq('user_id', session.user.id)
           .single()
+
+        // Check if user is approved
+        if (profile?.user_status !== 'approved') {
+          router.push('/pending')
+          return
+        }
 
         // Fetch user progress
         const { data: progress } = await supabase
@@ -36,10 +42,16 @@ export default function AccountPage() {
           .eq('course_id', 'en-es')
           .order('lesson_id')
 
+        // Calculate current lesson
+        const highestCompleted = progress && progress.length > 0 
+          ? Math.max(...progress.map(p => p.lesson_id))
+          : 0
+        const currentLesson = Math.min(highestCompleted + 1, 32)
+
         const data = {
           email: session.user.email,
-          currentLesson: session.user.user_metadata?.current_lesson || 1,
-          hasPersonalized: session.user.user_metadata?.has_personalized || false,
+          currentLesson: currentLesson,
+          hasPersonalized: !!profile?.profile_data,
           profileData: profile?.profile_data || null,
           completedLessons: progress || []
         }
@@ -57,13 +69,35 @@ export default function AccountPage() {
 
   if (loading) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        minHeight: '100vh' 
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+        color: '#f1f5f9'
       }}>
-        <p>Loading...</p>
+        <div style={{
+          width: '40px',
+          height: '40px',
+          border: '3px solid #334155',
+          borderTop: '3px solid #3b82f6',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite',
+          marginBottom: '1rem'
+        }}></div>
+        <p style={{ 
+          fontSize: '1.1rem',
+          color: '#cbd5e1'
+        }}>
+          Loading your account...
+        </p>
+        <style jsx>{`
+          @keyframes spin {
+            to { transform: rotate(360deg); }
+          }
+        `}</style>
       </div>
     )
   }
