@@ -1,61 +1,87 @@
 /* components/lesson/SentenceTable.module.css */
-.sentenceTable {
+
+/* Container for the table */
+.tableContainer {
   width: 100%;
-  border-collapse: collapse;
-  margin-top: 1rem;
+  margin-top: 1.5rem;
   background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
   border-radius: 8px;
+  border: 1px solid var(--border-primary);
   overflow: hidden;
 }
 
+/* Main table styling */
+.sentenceTable {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--bg-secondary);
+}
+
+/* Table headers */
 .tableHeader {
   background: var(--bg-tertiary);
-  padding: 1rem 1.25rem;
+  padding: 12px 16px;
   text-align: left;
   font-weight: 500;
   color: var(--text-secondary);
   font-size: 0.875rem;
+  line-height: 1.25rem;
+  border-bottom: 1px solid var(--border-primary);
+  position: relative;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  border-bottom: 1px solid var(--border-primary);
 }
 
+.tableHeader:not(:last-child) {
+  border-right: 1px solid var(--border-primary);
+}
+
+/* Table cells */
 .targetCell,
 .nativeCell {
-  padding: 1rem 1.25rem;
+  padding: 16px;
   border-bottom: 1px solid var(--border-primary);
   vertical-align: top;
-  transition: background-color 0.15s ease;
+  transition: all 0.15s ease;
+  position: relative;
 }
 
+.targetCell:not(:last-child),
+.nativeCell:not(:last-child) {
+  border-right: 1px solid var(--border-primary);
+}
+
+/* Remove border from last row */
 .sentenceRow:last-child .targetCell,
 .sentenceRow:last-child .nativeCell {
   border-bottom: none;
 }
 
+/* Hover effects */
 .sentenceRow:hover .targetCell,
 .sentenceRow:hover .nativeCell {
   background-color: var(--bg-tertiary);
 }
 
+/* Text styling */
 .targetSentence {
   font-weight: 500;
   color: var(--text-primary);
-  font-size: 1.1rem;
+  font-size: 1rem;
   line-height: 1.5;
-  font-family: var(--font-geist-sans);
   display: block;
+  margin: 0;
 }
 
 .nativeSentence {
   color: var(--text-secondary);
-  font-size: 1rem;
+  font-size: 0.95rem;
   line-height: 1.5;
-  font-family: var(--font-geist-sans);
   display: block;
+  margin: 0;
 }
 
+/* Empty state */
 .noSentences {
   text-align: center;
   padding: 2rem;
@@ -64,55 +90,61 @@
   background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
   border-radius: 8px;
-  margin-top: 1rem;
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
 }
 
-/* Mobile responsiveness */
+/* Tablet styling */
 @media (max-width: 768px) {
-  .sentenceTable {
-    font-size: 0.9rem;
+  .tableContainer {
+    margin-top: 1rem;
+    border-radius: 6px;
   }
-  
+
   .tableHeader {
-    padding: 0.75rem 1rem;
+    padding: 10px 12px;
     font-size: 0.8rem;
   }
-  
-  .targetCell,
-  .nativeCell {
-    padding: 0.75rem 1rem;
-  }
-  
-  .targetSentence {
-    font-size: 1rem;
-  }
-  
-  .nativeSentence {
-    font-size: 0.9rem;
-  }
-}
 
-@media (max-width: 480px) {
-  .tableHeader {
-    padding: 0.625rem 0.75rem;
-  }
-  
   .targetCell,
   .nativeCell {
-    padding: 0.625rem 0.75rem;
+    padding: 14px 12px;
   }
-  
+
   .targetSentence {
     font-size: 0.95rem;
   }
-  
+
   .nativeSentence {
-    font-size: 0.85rem;
+    font-size: 0.9rem;
   }
 }
 
-/* Stack columns on very small screens */
-@media (max-width: 400px) {
+/* Mobile styling */
+@media (max-width: 640px) {
+  .tableHeader {
+    padding: 8px 10px;
+    font-size: 0.75rem;
+  }
+
+  .targetCell,
+  .nativeCell {
+    padding: 12px 10px;
+  }
+
+  .targetSentence {
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+
+  .nativeSentence {
+    font-size: 0.85rem;
+    line-height: 1.4;
+  }
+}
+
+/* Stack layout for very small screens */
+@media (max-width: 480px) {
   .sentenceTable,
   .sentenceTable thead,
   .sentenceTable tbody,
@@ -121,50 +153,76 @@
   .sentenceTable tr {
     display: block;
   }
-  
+
+  /* Hide the header */
   .sentenceTable thead tr {
     position: absolute;
     top: -9999px;
     left: -9999px;
   }
-  
+
   .sentenceRow {
     border: 1px solid var(--border-primary);
-    border-radius: 6px;
-    margin-bottom: 0.5rem;
-    padding: 0.75rem;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    padding: 16px;
     background: var(--bg-secondary);
   }
-  
+
   .targetCell,
   .nativeCell {
     border: none;
-    padding: 0.5rem 0;
+    padding: 8px 0;
     position: relative;
     display: block;
   }
-  
-  .targetCell::before {
-    content: attr(data-label) ": ";
-    font-weight: 500;
-    color: var(--text-primary);
-    display: inline-block;
-    width: 5rem;
-    margin-bottom: 0.25rem;
-  }
-  
+
+  .targetCell::before,
   .nativeCell::before {
-    content: attr(data-label) ": ";
+    content: attr(data-label);
     font-weight: 500;
-    color: var(--text-primary);
-    display: inline-block;
-    width: 5rem;
-    margin-bottom: 0.25rem;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: block;
+    margin-bottom: 4px;
   }
-  
+
   .targetSentence,
   .nativeSentence {
-    display: inline;
+    display: block;
     margin-left: 0;
+  }
+
+  .targetSentence {
+    font-size: 1rem;
+    margin-bottom: 12px;
+  }
+
+  .nativeSentence {
+    font-size: 0.9rem;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 360px) {
+  .sentenceRow {
+    padding: 12px;
+    margin-bottom: 10px;
+  }
+
+  .targetCell,
+  .nativeCell {
+    padding: 6px 0;
+  }
+
+  .targetSentence {
+    font-size: 0.95rem;
+    margin-bottom: 10px;
+  }
+
+  .nativeSentence {
+    font-size: 0.85rem;
   }
 }
