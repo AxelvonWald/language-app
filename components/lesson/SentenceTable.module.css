@@ -7,7 +7,7 @@
   background: var(--bg-secondary);
   border-radius: 8px;
   border: 1px solid var(--border-primary);
-  overflow: hidden;
+  overflow-x: auto; /* Allow horizontal scrolling if needed */
 }
 
 /* Main table styling */
@@ -15,6 +15,7 @@
   width: 100%;
   border-collapse: collapse;
   background: var(--bg-secondary);
+  min-width: 300px; /* Minimum width to maintain table structure */
 }
 
 /* Table headers */
@@ -30,6 +31,7 @@
   position: relative;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  white-space: nowrap; /* Prevent header text from wrapping */
 }
 
 .tableHeader:not(:last-child) {
@@ -94,7 +96,7 @@
   font-size: 0.9rem;
 }
 
-/* Tablet styling - keep table layout */
+/* Tablet styling - still keep table */
 @media (max-width: 768px) {
   .tableContainer {
     margin-top: 1rem;
@@ -108,121 +110,115 @@
 
   .targetCell,
   .nativeCell {
-    padding: 14px 12px;
-  }
-
-  .targetSentence {
-    font-size: 0.95rem;
-  }
-
-  .nativeSentence {
-    font-size: 0.9rem;
-  }
-}
-
-/* Mobile styling - still keep table layout */
-@media (max-width: 640px) {
-  .tableHeader {
-    padding: 8px 10px;
-    font-size: 0.75rem;
-  }
-
-  .targetCell,
-  .nativeCell {
     padding: 12px 10px;
   }
 
   .targetSentence {
-    font-size: 0.9rem;
-    line-height: 1.4;
-  }
-
-  .nativeSentence {
-    font-size: 0.85rem;
-    line-height: 1.4;
-  }
-}
-
-/* Stack layout ONLY for very small screens (below 400px) */
-@media (max-width: 400px) {
-  .sentenceTable,
-  .sentenceTable thead,
-  .sentenceTable tbody,
-  .sentenceTable th,
-  .sentenceTable td,
-  .sentenceTable tr {
-    display: block;
-  }
-
-  /* Hide the header */
-  .sentenceTable thead tr {
-    position: absolute;
-    top: -9999px;
-    left: -9999px;
-  }
-
-  .sentenceRow {
-    border: 1px solid var(--border-primary);
-    border-radius: 8px;
-    margin-bottom: 12px;
-    padding: 16px;
-    background: var(--bg-secondary);
-  }
-
-  .targetCell,
-  .nativeCell {
-    border: none;
-    padding: 8px 0;
-    position: relative;
-    display: block;
-  }
-
-  .targetCell::before,
-  .nativeCell::before {
-    content: attr(data-label);
-    font-weight: 500;
-    color: var(--text-secondary);
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    display: block;
-    margin-bottom: 4px;
-  }
-
-  .targetSentence,
-  .nativeSentence {
-    display: block;
-    margin-left: 0;
-  }
-
-  .targetSentence {
-    font-size: 1rem;
-    margin-bottom: 12px;
-  }
-
-  .nativeSentence {
-    font-size: 0.9rem;
-  }
-}
-
-/* Extra small screens */
-@media (max-width: 360px) {
-  .sentenceRow {
-    padding: 12px;
-    margin-bottom: 10px;
-  }
-
-  .targetCell,
-  .nativeCell {
-    padding: 6px 0;
-  }
-
-  .targetSentence {
     font-size: 0.95rem;
-    margin-bottom: 10px;
+  }
+
+  .nativeSentence {
+    font-size: 0.9rem;
+  }
+
+  .sentenceTable {
+    min-width: 280px; /* Slightly smaller minimum on tablet */
+  }
+}
+
+/* Mobile styling - still keep table */
+@media (max-width: 480px) {
+  .tableHeader {
+    padding: 8px 8px;
+    font-size: 0.75rem;
+  }
+
+  .targetCell,
+  .nativeCell {
+    padding: 10px 8px;
+  }
+
+  .targetSentence {
+    font-size: 0.9rem;
+    line-height: 1.4;
   }
 
   .nativeSentence {
     font-size: 0.85rem;
+    line-height: 1.4;
+  }
+
+  .sentenceTable {
+    min-width: 260px; /* Even smaller minimum on mobile */
+  }
+}
+
+/* Very small screens - still table, but more compact */
+@media (max-width: 360px) {
+  .tableHeader {
+    padding: 6px 6px;
+    font-size: 0.7rem;
+  }
+
+  .targetCell,
+  .nativeCell {
+    padding: 8px 6px;
+  }
+
+  .targetSentence {
+    font-size: 0.85rem;
+    line-height: 1.3;
+  }
+
+  .nativeSentence {
+    font-size: 0.8rem;
+    line-height: 1.3;
+  }
+
+  .sentenceTable {
+    min-width: 240px; /* Compact but still table */
+  }
+}
+
+/* Ultra small screens (< 320px) - final table adjustments */
+@media (max-width: 320px) {
+  .tableHeader {
+    padding: 4px 4px;
+    font-size: 0.65rem;
+  }
+
+  .targetCell,
+  .nativeCell {
+    padding: 6px 4px;
+  }
+
+  .targetSentence {
+    font-size: 0.8rem;
+    line-height: 1.2;
+  }
+
+  .nativeSentence {
+    font-size: 0.75rem;
+    line-height: 1.2;
+  }
+
+  .sentenceTable {
+    min-width: 220px; /* Minimum viable table width */
+  }
+
+  /* Add subtle scroll indicator */
+  .tableContainer {
+    position: relative;
+  }
+
+  .tableContainer::after {
+    content: '← Scroll →';
+    position: absolute;
+    bottom: 4px;
+    right: 8px;
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    opacity: 0.7;
+    pointer-events: none;
   }
 }
