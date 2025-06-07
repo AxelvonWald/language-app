@@ -1,37 +1,62 @@
 // components/lesson/Section.jsx
-import AudioPlayer from "./AudioPlayer";
-import SentenceTable from "./SentenceTable";
-import styles from "./Section.module.css";
+'use client'
+import { useState } from 'react'
+import AudioPlayer from './AudioPlayer'
+import SentenceTable from './SentenceTable'
+import styles from './Section.module.css'
 
 export default function Section({ 
   title, 
   instruction, 
   audio, 
   sentences, 
-  showColumns,
+  showColumns, 
   className = "" 
 }) {
+  const [isCompleted, setIsCompleted] = useState(false)
+
+  const handleCheckboxChange = (checked) => {
+    setIsCompleted(checked)
+  }
+
   return (
-    <div className={`${styles.section} ${className}`}>
+    <section className={`${styles.section} ${className}`}>
       <h2 className={styles.sectionTitle}>{title}</h2>
       
       {instruction && (
-        <p className={styles.sectionInstruction}>
+        <div className={styles.sectionInstruction}>
           {instruction}
-        </p>
+        </div>
       )}
       
       {audio && (
         <div className={styles.audioSection}>
-          <AudioPlayer audioPath={audio} />
+          <AudioPlayer src={audio} />
         </div>
       )}
       
-      <SentenceTable 
-        sentences={sentences} 
-        showColumns={showColumns}
-        className={styles.sentenceTable}
-      />
-    </div>
-  );
+      {sentences && sentences.length > 0 && (
+        <SentenceTable 
+          sentences={sentences} 
+          showColumns={showColumns}
+          showCheckboxes={false}
+        />
+      )}
+
+      {/* Section completion checkbox */}
+      <div className={styles.sectionCheckbox}>
+        <label className={styles.checkboxLabel}>
+          <input
+            type="checkbox"
+            className={styles.checkbox}
+            checked={isCompleted}
+            onChange={(e) => handleCheckboxChange(e.target.checked)}
+          />
+          <span className={styles.checkboxText}>
+            Mark section as complete
+          </span>
+        </label>
+      </div>
+    </section>
+  )
 }

@@ -37,7 +37,7 @@ export default function SentenceTable({ sentences, showColumns, className = "" }
           {sentences.map((sentence, index) => (
             <tr key={sentence.id || index} className={styles.sentenceRow}>
               {showTarget && (
-                <td 
+                <td
                   className={styles.targetCell}
                   data-label="Español"
                 >
@@ -47,7 +47,7 @@ export default function SentenceTable({ sentences, showColumns, className = "" }
                 </td>
               )}
               {showNative && (
-                <td 
+                <td
                   className={styles.nativeCell}
                   data-label="English"
                 >

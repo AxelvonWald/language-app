@@ -94,7 +94,7 @@
   font-size: 0.9rem;
 }
 
-/* Tablet styling */
+/* Tablet styling - keep table layout */
 @media (max-width: 768px) {
   .tableContainer {
     margin-top: 1rem;
@@ -120,7 +120,7 @@
   }
 }
 
-/* Mobile styling */
+/* Mobile styling - still keep table layout */
 @media (max-width: 640px) {
   .tableHeader {
     padding: 8px 10px;
@@ -143,8 +143,8 @@
   }
 }
 
-/* Stack layout for very small screens */
-@media (max-width: 480px) {
+/* Stack layout ONLY for very small screens (below 400px) */
+@media (max-width: 400px) {
   .sentenceTable,
   .sentenceTable thead,
   .sentenceTable tbody,
