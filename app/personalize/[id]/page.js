@@ -116,8 +116,7 @@ export default function PersonalizePage({ params }) {
       const result = await response.json();
 
       if (response.ok && result.success) {
-        // Update local state through the hook as well
-        await savePersonalizationData(updatedData);
+        // No need to call savePersonalizationData again - the API already saved it
 
         // Show success message if TTS requests were created
         if (result.ttsRequestsCreated > 0) {

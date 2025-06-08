@@ -1,7 +1,13 @@
 // pages/api/personalize.js
 // Enhanced to create TTS requests when user personalizes
 
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@supabase/supabase-js';
+
+// Use service role for admin operations
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY // Need to add this to env vars
+);
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -16,13 +22,13 @@ export default async function handler(req, res) {
     }
 
     // 1. Save personalization data (preserve existing user_status)
-    const { data: existingProfile } = await supabase
+    const { data: existingProfile } = await supabaseAdmin
       .from('user_profiles')
       .select('user_status')
       .eq('user_id', userId)
       .single();
 
-    const { error: profileError } = await supabase
+    const { error: profileError } = await supabaseAdmin
       .from('user_profiles')
       .upsert({ 
         user_id: userId, 
@@ -117,7 +123,7 @@ async function generateTTSRequests(userId, profileData) {
 
     // Batch insert TTS requests
     if (requests.length > 0) {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from('tts_requests')
         .insert(requests);
 
@@ -140,7 +146,7 @@ async function generateTTSRequests(userId, profileData) {
 async function sendTTSNotification(userId, requestCount) {
   try {
     // Get user email for the notification
-    const { data: user } = await supabase.auth.admin.getUserById(userId);
+    const { data: user } = await supabaseAdmin.auth.admin.getUserById(userId);
     
     const emailData = {
       from: 'onboarding@resend.dev',
