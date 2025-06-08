@@ -8,12 +8,13 @@ import styles from './LessonCompletion.module.css'
 export default function LessonCompletion({ currentLessonId, totalLessons, onComplete, isCompleted }) {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
-  const { completeLesson, hasPersonalized } = useProgress()
+  const { completeLesson, getNextStepUrl, courseFlow } = useProgress()
 
   const handleNextLesson = async () => {
     setIsLoading(true)
     try {
       const currentLessonNum = parseInt(currentLessonId)
+  const nextStepInfo = getNextStepInfo()
       
       // Mark lesson as completed if not already completed
       if (!isCompleted) {
@@ -30,24 +31,67 @@ export default function LessonCompletion({ currentLessonId, totalLessons, onComp
         }
       }
 
-      // Special case: redirect to personalization after lesson 5
-      if (currentLessonNum === 5 && !hasPersonalized()) {
-        router.push('/personalize')
-        return
+      // Use course flow to determine next step
+      if (courseFlow?.flow) {
+        // Find current step in the flow
+        const currentStepIndex = courseFlow.flow.findIndex(
+          step => step.type === 'lesson' && step.id === currentLessonNum
+        )
+        
+        if (currentStepIndex !== -1 && currentStepIndex < courseFlow.flow.length - 1) {
+          const nextStep = courseFlow.flow[currentStepIndex + 1]
+          console.log('Next step from course flow:', nextStep)
+          
+          if (nextStep.type === 'lesson') {
+            router.push(`/lessons/${nextStep.id}`)
+            return
+          } else if (nextStep.type === 'personalization') {
+            // Build personalization URL based on ID
+            const personalizeUrl = nextStep.id === 'basic' 
+              ? '/personalize' 
+              : `/personalize/${nextStep.id}`
+            router.push(personalizeUrl)
+            return
+          }
+        }
       }
 
-      // Navigate to next lesson (if not the last lesson)
+      // Fallback: go to next lesson
       if (currentLessonNum < totalLessons) {
         router.push(`/lessons/${currentLessonNum + 1}`)
       } else {
-        // Course completed - redirect to account or completion page
         router.push('/account')
       }
+      
     } catch (error) {
       console.error('Error in handleNextLesson:', error)
     } finally {
       setIsLoading(false)
     }
+  }
+
+  // Helper function to get next step info for button text
+  const getNextStepInfo = () => {
+    if (!courseFlow?.flow) return { type: 'lesson', text: 'Next Lesson' }
+    
+    const currentLessonNum = parseInt(currentLessonId)
+    const currentStepIndex = courseFlow.flow.findIndex(
+      step => step.type === 'lesson' && step.id === currentLessonNum
+    )
+    
+    if (currentStepIndex !== -1 && currentStepIndex < courseFlow.flow.length - 1) {
+      const nextStep = courseFlow.flow[currentStepIndex + 1]
+      
+      if (nextStep.type === 'lesson') {
+        return { type: 'lesson', text: 'Next Lesson' }
+      } else if (nextStep.type === 'personalization') {
+        // Capitalize and format the personalization ID
+        const formattedName = nextStep.id.charAt(0).toUpperCase() + nextStep.id.slice(1)
+        return { type: 'personalization', text: `Add ${formattedName} Info` }
+      }
+    }
+    
+    return { type: 'lesson', text: 'Next Lesson' }
   }
 
   const handlePreviousLesson = () => {
@@ -83,7 +127,9 @@ export default function LessonCompletion({ currentLessonId, totalLessons, onComp
           className={styles.nextButton}
         >
           {isLoading ? 'Loading...' : (
-            isCompleted ? 'Next Lesson →' : 'Complete & Continue →'
+            isCompleted ? 
+              `Continue to ${nextStepInfo.text} →` : 
+              `Complete & ${nextStepInfo.text} →`
           )}
         </button>
       )}
