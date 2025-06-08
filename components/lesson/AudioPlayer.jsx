@@ -1,9 +1,16 @@
 // components/lesson/AudioPlayer.jsx
 'use client';
 import { useState, useRef, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
 import styles from './AudioPlayer.module.css';
 
-export default function AudioPlayer({ audioPath }) {
+export default function AudioPlayer({ 
+  audioPath, 
+  lessonId, 
+  sectionName,
+  userId = null, // For personalized audio later
+  fallbackToTTS = false 
+}) {
   const audioRef = useRef(null);
   const progressRef = useRef(null);
   
@@ -14,11 +21,101 @@ export default function AudioPlayer({ audioPath }) {
   const [isMuted, setIsMuted] = useState(false);
   const [playbackRate, setPlaybackRate] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [audioUrl, setAudioUrl] = useState(null);
+  const [audioError, setAudioError] = useState(false);
+
+  // Load audio URL (Supabase Storage or fallback)
+  useEffect(() => {
+    loadAudioUrl();
+  }, [audioPath, lessonId, sectionName, userId]);
+
+  const loadAudioUrl = async () => {
+    setIsLoading(true);
+    setAudioError(false);
+
+    try {
+      // Option 1: Check for personalized audio (when userId is provided)
+      if (userId) {
+        const personalizedPath = `personalized/user-${userId}-lesson-${lessonId}-${sectionName}.mp3`;
+        const { data: personalizedData } = supabase.storage
+          .from('audio')
+          .getPublicUrl(personalizedPath);
+        
+        // Test if personalized audio exists
+        const response = await fetch(personalizedData.publicUrl, { method: 'HEAD' });
+        if (response.ok) {
+          setAudioUrl(personalizedData.publicUrl);
+          return;
+        }
+      }
+
+      // Option 2: Check for lesson audio in Supabase Storage
+      const lessonPath = `en-es/lesson-${lessonId.toString().padStart(3, '0')}/${audioPath}`;
+      const { data: lessonData } = supabase.storage
+        .from('audio')
+        .getPublicUrl(lessonPath);
+
+      // Test if lesson audio exists in Supabase
+      const response = await fetch(lessonData.publicUrl, { method: 'HEAD' });
+      if (response.ok) {
+        setAudioUrl(lessonData.publicUrl);
+        return;
+      }
+
+      // Option 3: Fallback to local public files (for development)
+      const localPath = `/audio/en-es/lesson-${lessonId.toString().padStart(3, '0')}/${audioPath}`;
+      const localResponse = await fetch(localPath, { method: 'HEAD' });
+      if (localResponse.ok) {
+        setAudioUrl(localPath);
+        return;
+      }
+
+      // Option 4: Web Speech API fallback (if enabled)
+      if (fallbackToTTS) {
+        setAudioUrl(null); // Will trigger TTS
+        return;
+      }
+
+      // No audio found
+      setAudioError(true);
+      console.error('No audio found for:', { audioPath, lessonId, sectionName });
+
+    } catch (error) {
+      console.error('Error loading audio:', error);
+      setAudioError(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // TTS Fallback function
+  const playWithTTS = async (text) => {
+    if (!text || !window.speechSynthesis) {
+      setAudioError(true);
+      return;
+    }
+
+    try {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'es-ES'; // Spanish
+      utterance.rate = playbackRate;
+      utterance.volume = volume;
+      
+      utterance.onstart = () => setIsPlaying(true);
+      utterance.onend = () => setIsPlaying(false);
+      utterance.onerror = () => setAudioError(true);
+      
+      window.speechSynthesis.speak(utterance);
+    } catch (error) {
+      console.error('TTS Error:', error);
+      setAudioError(true);
+    }
+  };
 
   // Initialize audio element
   useEffect(() => {
     const audio = audioRef.current;
-    if (!audio) return;
+    if (!audio || !audioUrl) return;
 
     const handleLoadedData = () => {
       setDuration(audio.duration);
@@ -38,23 +135,30 @@ export default function AudioPlayer({ audioPath }) {
       setIsLoading(true);
     };
 
+    const handleError = () => {
+      setAudioError(true);
+      setIsLoading(false);
+    };
+
     audio.addEventListener('loadeddata', handleLoadedData);
     audio.addEventListener('timeupdate', handleTimeUpdate);
     audio.addEventListener('ended', handleEnded);
     audio.addEventListener('loadstart', handleLoadStart);
+    audio.addEventListener('error', handleError);
 
     return () => {
       audio.removeEventListener('loadeddata', handleLoadedData);
       audio.removeEventListener('timeupdate', handleTimeUpdate);
       audio.removeEventListener('ended', handleEnded);
       audio.removeEventListener('loadstart', handleLoadStart);
+      audio.removeEventListener('error', handleError);
     };
-  }, [audioPath]);
+  }, [audioUrl]);
 
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyPress = (e) => {
-      if (e.target.tagName === 'INPUT') return; // Don't interfere with form inputs
+      if (e.target.tagName === 'INPUT') return;
       
       switch (e.code) {
         case 'Space':
@@ -85,8 +189,17 @@ export default function AudioPlayer({ audioPath }) {
   }, [currentTime]);
 
   const togglePlayPause = () => {
+    if (audioError) return;
+
+    // Handle TTS fallback
+    if (!audioUrl && fallbackToTTS) {
+      // You'll need to pass the sentence text as a prop for this to work
+      // playWithTTS(sentenceText);
+      return;
+    }
+
     const audio = audioRef.current;
-    if (!audio) return;
+    if (!audio || !audioUrl) return;
 
     if (isPlaying) {
       audio.pause();
@@ -99,7 +212,7 @@ export default function AudioPlayer({ audioPath }) {
 
   const seek = (time) => {
     const audio = audioRef.current;
-    if (!audio) return;
+    if (!audio || !audioUrl) return;
     
     const clampedTime = Math.max(0, Math.min(duration, time));
     audio.currentTime = clampedTime;
@@ -143,8 +256,10 @@ export default function AudioPlayer({ audioPath }) {
   };
 
   const downloadAudio = () => {
+    if (!audioUrl) return;
+    
     const link = document.createElement('a');
-    link.href = audioPath;
+    link.href = audioUrl;
     link.download = audioPath.split('/').pop() || 'audio.mp3';
     document.body.appendChild(link);
     link.click();
@@ -161,19 +276,39 @@ export default function AudioPlayer({ audioPath }) {
 
   const progressPercentage = duration > 0 ? (currentTime / duration) * 100 : 0;
 
+  // Error state
+  if (audioError) {
+    return (
+      <div className={styles.audioPlayer}>
+        <div className={styles.errorState}>
+          <span style={{fontSize: '16px'}}>🔇</span>
+          <span>Audio not available</span>
+          <button 
+            onClick={loadAudioUrl}
+            className={styles.retryButton}
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.audioPlayer}>
-      <audio
-        ref={audioRef}
-        src={audioPath}
-        preload="metadata"
-      />
+      {audioUrl && (
+        <audio
+          ref={audioRef}
+          src={audioUrl}
+          preload="metadata"
+        />
+      )}
       
       {/* Main Controls */}
       <div className={styles.mainControls}>
         <button
           onClick={togglePlayPause}
-          disabled={isLoading}
+          disabled={isLoading || audioError}
           className={styles.playButton}
           aria-label={isPlaying ? "Pause" : "Play"}
         >
@@ -256,6 +391,7 @@ export default function AudioPlayer({ audioPath }) {
           className={styles.downloadButton}
           aria-label="Download audio"
           title="Download audio file"
+          disabled={!audioUrl}
         >
           <span style={{fontSize: '16px'}}>💾</span>
         </button>

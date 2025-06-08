@@ -5,18 +5,27 @@ import AudioPlayer from './AudioPlayer'
 import SentenceTable from './SentenceTable'
 import styles from './Section.module.css'
 
-export default function Section({ 
-  title, 
-  instruction, 
-  audio, 
-  sentences, 
-  showColumns, 
-  className = "" 
+export default function Section({
+  title,
+  instruction,
+  audio,
+  sentences,
+  showColumns,
+  className = "",
+  lessonId,
+  sectionName,
+  userId
 }) {
   const [isCompleted, setIsCompleted] = useState(false)
 
   const handleCheckboxChange = (checked) => {
     setIsCompleted(checked)
+  }
+
+  // Extract filename from full audio path
+  const getAudioFileName = (audioPath) => {
+    if (!audioPath) return null
+    return audioPath.split('/').pop() // Gets "sentence-1.mp3" from "/audio/en-es/lesson-001/sentence-1.mp3"
   }
 
   return (
@@ -31,18 +40,24 @@ export default function Section({
       
       {audio && (
         <div className={styles.audioSection}>
-          <AudioPlayer src={audio} />
+          <AudioPlayer 
+            audioPath={getAudioFileName(audio)}
+            lessonId={lessonId}
+            sectionName={sectionName}
+            userId={userId}
+            fallbackToTTS={true}
+          />
         </div>
       )}
       
       {sentences && sentences.length > 0 && (
-        <SentenceTable 
-          sentences={sentences} 
+        <SentenceTable
+          sentences={sentences}
           showColumns={showColumns}
           showCheckboxes={false}
         />
       )}
-
+      
       {/* Section completion checkbox */}
       <div className={styles.sectionCheckbox}>
         <label className={styles.checkboxLabel}>

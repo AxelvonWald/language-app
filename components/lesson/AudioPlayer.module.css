@@ -56,7 +56,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .timeDisplay {
@@ -238,23 +240,23 @@
   .audioPlayer {
     padding: 12px;
   }
-  
+
   .mainControls {
     gap: 8px;
   }
-  
+
   .playButton {
     width: 32px;
     height: 32px;
     font-size: 12px;
   }
-  
+
   .secondaryControls {
     gap: 6px;
     margin-top: 6px;
     padding-top: 6px;
   }
-  
+
   .volumeSlider {
     width: 50px;
   }
@@ -265,18 +267,42 @@
     font-size: 11px;
     min-width: 30px;
   }
-  
+
   .speedButton {
     padding: 2px 4px;
     font-size: 10px;
     min-width: 20px;
   }
-  
+
   .controlLabel {
     font-size: 10px;
   }
-  
+
   .volumeControl {
     display: none; /* Hide volume control on very small screens */
+  }
+
+  .errorState {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    background: #fee;
+    border-radius: 8px;
+    color: #d00;
+  }
+
+  .retryButton {
+    background: #f44;
+    color: white;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+  }
+
+  .retryButton:hover {
+    background: #d22;
   }
 }
