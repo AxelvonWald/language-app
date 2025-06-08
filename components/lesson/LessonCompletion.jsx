@@ -8,42 +8,12 @@ import styles from './LessonCompletion.module.css'
 export default function LessonCompletion({ currentLessonId, totalLessons, onComplete, isCompleted }) {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
-  const { completeLesson, courseFlow } = useProgress()
+  const { completeLesson } = useProgress()
 
   const handleNextLesson = async () => {
     setIsLoading(true)
     try {
       const currentLessonNum = parseInt(currentLessonId)
-  
-  // Safe way to get next step info with extensive error handling
-  const getNextStepText = () => {
-    try {
-      // Default fallback
-      if (!courseFlow || !courseFlow.flow || !Array.isArray(courseFlow.flow)) {
-        return 'Next Lesson'
-      }
-      
-      const currentStepIndex = courseFlow.flow.findIndex(
-        step => step && step.type === 'lesson' && step.id === currentLessonNum
-      )
-      
-      if (currentStepIndex >= 0 && currentStepIndex < courseFlow.flow.length - 1) {
-        const nextStep = courseFlow.flow[currentStepIndex + 1]
-        
-        if (nextStep && nextStep.type === 'personalization' && nextStep.id) {
-          const formattedName = nextStep.id.charAt(0).toUpperCase() + nextStep.id.slice(1)
-          return `Add ${formattedName} Info`
-        }
-      }
-      
-      return 'Next Lesson'
-    } catch (error) {
-      console.error('Error getting next step text:', error)
-      return 'Next Lesson'
-    }
-  }
-  
-  const nextStepText = getNextStepText()
       
       // Mark lesson as completed if not already completed
       if (!isCompleted) {
@@ -60,36 +30,13 @@ export default function LessonCompletion({ currentLessonId, totalLessons, onComp
         }
       }
 
-      // Use course flow to determine next step
-      if (courseFlow?.flow && Array.isArray(courseFlow.flow)) {
-        // Find current step in the flow
-        try {
-          const currentStepIndex = courseFlow.flow.findIndex(
-            step => step.type === 'lesson' && step.id === currentLessonNum
-          )
-          
-          if (currentStepIndex !== -1 && currentStepIndex < courseFlow.flow.length - 1) {
-            const nextStep = courseFlow.flow[currentStepIndex + 1]
-            console.log('Next step from course flow:', nextStep)
-            
-            if (nextStep?.type === 'lesson' && nextStep?.id) {
-              router.push(`/lessons/${nextStep.id}`)
-              return
-            } else if (nextStep?.type === 'personalization' && nextStep?.id) {
-              // Build personalization URL based on ID
-              const personalizeUrl = nextStep.id === 'basic' 
-                ? '/personalize' 
-                : `/personalize/${nextStep.id}`
-              router.push(personalizeUrl)
-              return
-            }
-          }
-        } catch (error) {
-          console.error('Error processing course flow:', error)
-        }
+      // Simple hardcoded navigation for now (we'll make it dynamic once this works)
+      if (currentLessonNum === 4) {
+        router.push('/personalize')
+        return
       }
 
-      // Fallback: go to next lesson
+      // Default: go to next lesson
       if (currentLessonNum < totalLessons) {
         router.push(`/lessons/${currentLessonNum + 1}`)
       } else {
@@ -128,7 +75,7 @@ export default function LessonCompletion({ currentLessonId, totalLessons, onComp
       {/* Spacer if no previous button */}
       {currentLessonNum === 1 && <div className={styles.spacer}></div>}
 
-      {/* Next Lesson Button - Always show if not the last lesson */}
+      {/* Next Lesson Button */}
       {currentLessonNum < totalLessons && (
         <button
           onClick={handleNextLesson}
@@ -136,9 +83,9 @@ export default function LessonCompletion({ currentLessonId, totalLessons, onComp
           className={styles.nextButton}
         >
           {isLoading ? 'Loading...' : (
-            isCompleted ? 
-              `Continue to ${nextStepText} →` : 
-              `Complete & ${nextStepText} →`
+            currentLessonNum === 4 ? 
+              (isCompleted ? 'Continue to Personalization →' : 'Complete & Personalize →') :
+              (isCompleted ? 'Next Lesson →' : 'Complete & Continue →')
           )}
         </button>
       )}
