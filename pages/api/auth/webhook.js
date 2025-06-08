@@ -54,17 +54,17 @@ async function sendSignupNotification(user) {
           <h3 style="margin-top: 0; color: #92400e;">⚡ Action Required</h3>
           <p>Please approve this user in your Supabase dashboard:</p>
           <ol>
-            <li>Go to Supabase → Authentication → Users</li>
+            <li>Go to Supabase → Table Editor → user_profiles</li>
             <li>Find user: <strong>${user.email}</strong></li>
-            <li>Set <code>email_confirmed_at</code> to current timestamp</li>
+            <li>Change <code>user_status</code> from "pending" to "approved"</li>
             <li>User can then access the app</li>
           </ol>
         </div>
         
         <div style="text-align: center; margin: 30px 0;">
-          <a href="https://supabase.com/dashboard" 
+          <a href="https://supabase.com/dashboard/project/YOUR_PROJECT_ID/editor" 
              style="background: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
-            👉 Open Supabase Dashboard
+            👉 Open Supabase Table Editor
           </a>
         </div>
         
