@@ -8,13 +8,42 @@ import styles from './LessonCompletion.module.css'
 export default function LessonCompletion({ currentLessonId, totalLessons, onComplete, isCompleted }) {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
-  const { completeLesson, getNextStepUrl, courseFlow } = useProgress()
+  const { completeLesson, courseFlow } = useProgress()
 
   const handleNextLesson = async () => {
     setIsLoading(true)
     try {
       const currentLessonNum = parseInt(currentLessonId)
-  const nextStepInfo = getNextStepInfo()
+  
+  // Safe way to get next step info with extensive error handling
+  const getNextStepText = () => {
+    try {
+      // Default fallback
+      if (!courseFlow || !courseFlow.flow || !Array.isArray(courseFlow.flow)) {
+        return 'Next Lesson'
+      }
+      
+      const currentStepIndex = courseFlow.flow.findIndex(
+        step => step && step.type === 'lesson' && step.id === currentLessonNum
+      )
+      
+      if (currentStepIndex >= 0 && currentStepIndex < courseFlow.flow.length - 1) {
+        const nextStep = courseFlow.flow[currentStepIndex + 1]
+        
+        if (nextStep && nextStep.type === 'personalization' && nextStep.id) {
+          const formattedName = nextStep.id.charAt(0).toUpperCase() + nextStep.id.slice(1)
+          return `Add ${formattedName} Info`
+        }
+      }
+      
+      return 'Next Lesson'
+    } catch (error) {
+      console.error('Error getting next step text:', error)
+      return 'Next Lesson'
+    }
+  }
+  
+  const nextStepText = getNextStepText()
       
       // Mark lesson as completed if not already completed
       if (!isCompleted) {
@@ -74,38 +103,6 @@ export default function LessonCompletion({ currentLessonId, totalLessons, onComp
     }
   }
 
-  // Helper function to get next step info for button text
-  const getNextStepInfo = () => {
-    // Safe fallback if courseFlow isn't loaded yet
-    if (!courseFlow?.flow || !Array.isArray(courseFlow.flow)) {
-      return { type: 'lesson', text: 'Next Lesson' }
-    }
-    
-    const currentLessonNum = parseInt(currentLessonId)
-    
-    try {
-      const currentStepIndex = courseFlow.flow.findIndex(
-        step => step.type === 'lesson' && step.id === currentLessonNum
-      )
-      
-      if (currentStepIndex !== -1 && currentStepIndex < courseFlow.flow.length - 1) {
-        const nextStep = courseFlow.flow[currentStepIndex + 1]
-        
-        if (nextStep?.type === 'lesson') {
-          return { type: 'lesson', text: 'Next Lesson' }
-        } else if (nextStep?.type === 'personalization' && nextStep?.id) {
-          // Capitalize and format the personalization ID
-          const formattedName = nextStep.id.charAt(0).toUpperCase() + nextStep.id.slice(1)
-          return { type: 'personalization', text: `Add ${formattedName} Info` }
-        }
-      }
-    } catch (error) {
-      console.error('Error in getNextStepInfo:', error)
-    }
-    
-    return { type: 'lesson', text: 'Next Lesson' }
-  }
-
   const handlePreviousLesson = () => {
     const currentLessonNum = parseInt(currentLessonId)
     if (currentLessonNum > 1) {
@@ -140,8 +137,8 @@ export default function LessonCompletion({ currentLessonId, totalLessons, onComp
         >
           {isLoading ? 'Loading...' : (
             isCompleted ? 
-              `Continue to ${nextStepInfo.text} →` : 
-              `Complete & ${nextStepInfo.text} →`
+              `Continue to ${nextStepText} →` : 
+              `Complete & ${nextStepText} →`
           )}
         </button>
       )}
