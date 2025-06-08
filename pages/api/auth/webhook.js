@@ -38,7 +38,7 @@ export default async function handler(req, res) {
 async function sendSignupNotification(user) {
   const emailData = {
     from: 'onboarding@resend.dev', // ✅ Use Resend's verified domain
-    to: 'nathan@disroot.org', // ❗ UPDATE THIS to your actual email
+    to: 'njyoung@disroot.org', // ✅ Your verified email address
     subject: `🎓 New Language App Signup: ${user.email}`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
