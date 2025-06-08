@@ -1,147 +1,179 @@
 // app/personalize/[id]/page.js
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { useProgress } from '@/hooks/useProgress'
-import styles from './PersonalizePage.module.css'
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useProgress } from "@/hooks/useProgress";
+import styles from "./PersonalizePage.module.css";
 
 export default function PersonalizePage({ params }) {
-  const router = useRouter()
-  const { user, loading, personalizationData, savePersonalizationData, isApproved } = useProgress()
-  const [formConfig, setFormConfig] = useState(null)
-  const [courseFlow, setCourseFlow] = useState(null)
-  const [formData, setFormData] = useState({})
-  const [saving, setSaving] = useState(false)
-  const [loadingConfig, setLoadingConfig] = useState(true)
+  const router = useRouter();
+  const {
+    user,
+    loading,
+    personalizationData,
+    savePersonalizationData,
+    isApproved,
+  } = useProgress();
+  const [formConfig, setFormConfig] = useState(null);
+  const [courseFlow, setCourseFlow] = useState(null);
+  const [formData, setFormData] = useState({});
+  const [saving, setSaving] = useState(false);
+  const [loadingConfig, setLoadingConfig] = useState(true);
 
-  const personalizationId = params.id
+  const personalizationId = params.id;
 
   // Load form configuration and course flow
   useEffect(() => {
     const loadConfigs = async () => {
       try {
         const [formsModule, flowModule] = await Promise.all([
-          import('../../../data/courses/en-es/personalization-forms.json'),
-          import('../../../data/courses/en-es/course-flow.json')
-        ])
-        
-        const forms = formsModule.default
-        const flow = flowModule.default
-        
+          import("../../../data/courses/en-es/personalization-forms.json"),
+          import("../../../data/courses/en-es/course-flow.json"),
+        ]);
+
+        const forms = formsModule.default;
+        const flow = flowModule.default;
+
         if (!forms[personalizationId]) {
-          console.error('Personalization form not found:', personalizationId)
-          router.push('/lessons/1')
-          return
+          console.error("Personalization form not found:", personalizationId);
+          router.push("/lessons/1");
+          return;
         }
-        
-        setFormConfig(forms[personalizationId])
-        setCourseFlow(flow)
-        
+
+        setFormConfig(forms[personalizationId]);
+        setCourseFlow(flow);
+
         // Initialize form data with existing values
         if (personalizationData) {
-          const initialData = {}
-          forms[personalizationId].fields.forEach(field => {
+          const initialData = {};
+          forms[personalizationId].fields.forEach((field) => {
             if (personalizationData[field.id] !== undefined) {
-              initialData[field.id] = personalizationData[field.id]
+              initialData[field.id] = personalizationData[field.id];
             }
-          })
-          setFormData(initialData)
+          });
+          setFormData(initialData);
         }
-        
       } catch (error) {
-        console.error('Error loading form config:', error)
-        router.push('/lessons/1')
+        console.error("Error loading form config:", error);
+        router.push("/lessons/1");
       } finally {
-        setLoadingConfig(false)
+        setLoadingConfig(false);
       }
-    }
+    };
 
-    loadConfigs()
-  }, [personalizationId, personalizationData, router])
+    loadConfigs();
+  }, [personalizationId, personalizationData, router]);
 
   // Check authentication and approval
   useEffect(() => {
     if (!loading && !loadingConfig) {
       if (!user) {
-        router.push('/login')
-        return
+        router.push("/login");
+        return;
       }
-      
+
       if (!isApproved()) {
-        router.push('/pending')
-        return
+        router.push("/pending");
+        return;
       }
     }
-  }, [user, loading, loadingConfig, isApproved, router])
+  }, [user, loading, loadingConfig, isApproved, router]);
 
   const handleInputChange = (fieldId, value) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [fieldId]: value
-    }))
-  }
+      [fieldId]: value,
+    }));
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    
-    if (!user || !formConfig || !courseFlow) return
-    
-    setSaving(true)
-    
+    e.preventDefault();
+
+    if (!user || !formConfig || !courseFlow) return;
+
+    setSaving(true);
+
     try {
       // Merge new data with existing personalization data
       const updatedData = {
         ...personalizationData,
-        ...formData
-      }
-      
-      const success = await savePersonalizationData(updatedData)
-      
-      if (success) {
+        ...formData,
+      };
+
+      // Call the enhanced API that creates TTS requests and sends notifications
+      const response = await fetch("/api/personalize", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: user.id,
+          profileData: updatedData,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        // Update local state through the hook as well
+        await savePersonalizationData(updatedData);
+
+        // Show success message if TTS requests were created
+        if (result.ttsRequestsCreated > 0) {
+          alert(
+            `Success! ${result.ttsRequestsCreated} personalized audio requests created. You'll receive these after admin approval.`
+          );
+        }
+
         // Find next step in course flow
         const currentStepIndex = courseFlow.flow.findIndex(
-          step => step.type === 'personalization' && step.id === personalizationId
-        )
-        
-        if (currentStepIndex !== -1 && currentStepIndex < courseFlow.flow.length - 1) {
-          const nextStep = courseFlow.flow[currentStepIndex + 1]
-          
-          if (nextStep.type === 'lesson') {
-            router.push(`/lessons/${nextStep.id}`)
-          } else if (nextStep.type === 'personalization') {
-            router.push(`/personalize/${nextStep.id}`)
+          (step) =>
+            step.type === "personalization" && step.id === personalizationId
+        );
+
+        if (
+          currentStepIndex !== -1 &&
+          currentStepIndex < courseFlow.flow.length - 1
+        ) {
+          const nextStep = courseFlow.flow[currentStepIndex + 1];
+
+          if (nextStep.type === "lesson") {
+            router.push(`/lessons/${nextStep.id}`);
+          } else if (nextStep.type === "personalization") {
+            router.push(`/personalize/${nextStep.id}`);
           }
         } else {
           // Fallback to lessons if flow is complete
-          router.push('/lessons/1')
+          router.push("/lessons/1");
         }
       } else {
-        alert('Error saving your information. Please try again.')
+        console.error("API Error:", result);
+        alert("Error saving your information. Please try again.");
       }
     } catch (error) {
-      console.error('Save error:', error)
-      alert('Error saving your information. Please try again.')
+      console.error("Save error:", error);
+      alert("Error saving your information. Please try again.");
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
-  }
+  };
 
   const isFormValid = () => {
-    if (!formConfig) return false
-    
-    return formConfig.fields.every(field => {
-      if (!field.required) return true
-      const value = formData[field.id]
-      return value !== undefined && value !== '' && value !== null
-    })
-  }
+    if (!formConfig) return false;
+
+    return formConfig.fields.every((field) => {
+      if (!field.required) return true;
+      const value = formData[field.id];
+      return value !== undefined && value !== "" && value !== null;
+    });
+  };
 
   const renderField = (field) => {
-    const value = formData[field.id] || ''
-    
+    const value = formData[field.id] || "";
+
     switch (field.type) {
-      case 'text':
+      case "text":
         return (
           <input
             type="text"
@@ -154,9 +186,9 @@ export default function PersonalizePage({ params }) {
             maxLength={field.validation?.maxLength}
             minLength={field.validation?.minLength}
           />
-        )
-      
-      case 'number':
+        );
+
+      case "number":
         return (
           <input
             type="number"
@@ -169,9 +201,9 @@ export default function PersonalizePage({ params }) {
             min={field.validation?.min}
             max={field.validation?.max}
           />
-        )
-      
-      case 'select':
+        );
+
+      case "select":
         return (
           <select
             value={value}
@@ -181,28 +213,36 @@ export default function PersonalizePage({ params }) {
             className={styles.selectInput}
           >
             <option value="">Choose an option...</option>
-            {field.options?.map(option => (
+            {field.options?.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
             ))}
           </select>
-        )
-      
-      case 'multiselect':
+        );
+
+      case "multiselect":
         return (
           <div className={styles.multiselectContainer}>
-            {field.options?.map(option => (
+            {field.options?.map((option) => (
               <label key={option.value} className={styles.checkboxLabel}>
                 <input
                   type="checkbox"
-                  checked={Array.isArray(value) ? value.includes(option.value) : false}
+                  checked={
+                    Array.isArray(value) ? value.includes(option.value) : false
+                  }
                   onChange={(e) => {
-                    const currentValues = Array.isArray(value) ? value : []
+                    const currentValues = Array.isArray(value) ? value : [];
                     if (e.target.checked) {
-                      handleInputChange(field.id, [...currentValues, option.value])
+                      handleInputChange(field.id, [
+                        ...currentValues,
+                        option.value,
+                      ]);
                     } else {
-                      handleInputChange(field.id, currentValues.filter(v => v !== option.value))
+                      handleInputChange(
+                        field.id,
+                        currentValues.filter((v) => v !== option.value)
+                      );
                     }
                   }}
                   disabled={saving}
@@ -212,12 +252,12 @@ export default function PersonalizePage({ params }) {
               </label>
             ))}
           </div>
-        )
-      
+        );
+
       default:
-        return null
+        return null;
     }
-  }
+  };
 
   // Loading states
   if (loading || loadingConfig) {
@@ -226,11 +266,11 @@ export default function PersonalizePage({ params }) {
         <div className={styles.loadingSpinner}></div>
         <div>Loading personalization form...</div>
       </div>
-    )
+    );
   }
 
   if (!user || !formConfig) {
-    return null
+    return null;
   }
 
   return (
@@ -243,7 +283,7 @@ export default function PersonalizePage({ params }) {
         </div>
 
         <form onSubmit={handleSubmit} className={styles.form}>
-          {formConfig.fields.map(field => (
+          {formConfig.fields.map((field) => (
             <div key={field.id} className={styles.fieldGroup}>
               <label className={styles.fieldLabel}>
                 {field.label}
@@ -258,10 +298,10 @@ export default function PersonalizePage({ params }) {
             disabled={!isFormValid() || saving}
             className={styles.submitButton}
           >
-            {saving ? 'Saving...' : 'Continue →'}
+            {saving ? "Saving..." : "Continue →"}
           </button>
         </form>
       </div>
     </div>
-  )
+  );
 }
