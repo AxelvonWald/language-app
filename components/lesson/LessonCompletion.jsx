@@ -8,7 +8,9 @@ import styles from './LessonCompletion.module.css'
 export default function LessonCompletion({ currentLessonId, totalLessons, onComplete, isCompleted }) {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
-  const { completeLesson } = useProgress()
+  const { completeLesson, courseFlow } = useProgress()
+
+  console.log('LessonCompletion - courseFlow:', courseFlow) // Debug log
 
   const handleNextLesson = async () => {
     setIsLoading(true)
@@ -30,17 +32,45 @@ export default function LessonCompletion({ currentLessonId, totalLessons, onComp
         }
       }
 
-      // Simple hardcoded navigation for now (we'll make it dynamic once this works)
-      if (currentLessonNum === 4) {
-        router.push('/personalize')
-        return
+      // Try to use course flow, fall back to hardcoded if it fails
+      let navigationHandled = false
+      
+      if (courseFlow && courseFlow.flow && Array.isArray(courseFlow.flow)) {
+        try {
+          const currentStepIndex = courseFlow.flow.findIndex(
+            step => step && step.type === 'lesson' && step.id === currentLessonNum
+          )
+          
+          console.log('Current step index:', currentStepIndex)
+          
+          if (currentStepIndex >= 0 && currentStepIndex < courseFlow.flow.length - 1) {
+            const nextStep = courseFlow.flow[currentStepIndex + 1]
+            console.log('Next step:', nextStep)
+            
+            if (nextStep && nextStep.type === 'lesson' && nextStep.id) {
+              router.push(`/lessons/${nextStep.id}`)
+              navigationHandled = true
+            } else if (nextStep && nextStep.type === 'personalization' && nextStep.id) {
+              const personalizeUrl = nextStep.id === 'basic' ? '/personalize' : `/personalize/${nextStep.id}`
+              router.push(personalizeUrl)
+              navigationHandled = true
+            }
+          }
+        } catch (error) {
+          console.error('Course flow navigation error:', error)
+        }
       }
-
-      // Default: go to next lesson
-      if (currentLessonNum < totalLessons) {
-        router.push(`/lessons/${currentLessonNum + 1}`)
-      } else {
-        router.push('/account')
+      
+      // Fallback navigation if course flow didn't work
+      if (!navigationHandled) {
+        console.log('Using fallback navigation')
+        if (currentLessonNum === 4) {
+          router.push('/personalize')
+        } else if (currentLessonNum < totalLessons) {
+          router.push(`/lessons/${currentLessonNum + 1}`)
+        } else {
+          router.push('/account')
+        }
       }
       
     } catch (error) {
