@@ -32,27 +32,31 @@ export default function LessonCompletion({ currentLessonId, totalLessons, onComp
       }
 
       // Use course flow to determine next step
-      if (courseFlow?.flow) {
+      if (courseFlow?.flow && Array.isArray(courseFlow.flow)) {
         // Find current step in the flow
-        const currentStepIndex = courseFlow.flow.findIndex(
-          step => step.type === 'lesson' && step.id === currentLessonNum
-        )
-        
-        if (currentStepIndex !== -1 && currentStepIndex < courseFlow.flow.length - 1) {
-          const nextStep = courseFlow.flow[currentStepIndex + 1]
-          console.log('Next step from course flow:', nextStep)
+        try {
+          const currentStepIndex = courseFlow.flow.findIndex(
+            step => step.type === 'lesson' && step.id === currentLessonNum
+          )
           
-          if (nextStep.type === 'lesson') {
-            router.push(`/lessons/${nextStep.id}`)
-            return
-          } else if (nextStep.type === 'personalization') {
-            // Build personalization URL based on ID
-            const personalizeUrl = nextStep.id === 'basic' 
-              ? '/personalize' 
-              : `/personalize/${nextStep.id}`
-            router.push(personalizeUrl)
-            return
+          if (currentStepIndex !== -1 && currentStepIndex < courseFlow.flow.length - 1) {
+            const nextStep = courseFlow.flow[currentStepIndex + 1]
+            console.log('Next step from course flow:', nextStep)
+            
+            if (nextStep?.type === 'lesson' && nextStep?.id) {
+              router.push(`/lessons/${nextStep.id}`)
+              return
+            } else if (nextStep?.type === 'personalization' && nextStep?.id) {
+              // Build personalization URL based on ID
+              const personalizeUrl = nextStep.id === 'basic' 
+                ? '/personalize' 
+                : `/personalize/${nextStep.id}`
+              router.push(personalizeUrl)
+              return
+            }
           }
+        } catch (error) {
+          console.error('Error processing course flow:', error)
         }
       }
 
@@ -72,23 +76,31 @@ export default function LessonCompletion({ currentLessonId, totalLessons, onComp
 
   // Helper function to get next step info for button text
   const getNextStepInfo = () => {
-    if (!courseFlow?.flow) return { type: 'lesson', text: 'Next Lesson' }
+    // Safe fallback if courseFlow isn't loaded yet
+    if (!courseFlow?.flow || !Array.isArray(courseFlow.flow)) {
+      return { type: 'lesson', text: 'Next Lesson' }
+    }
     
     const currentLessonNum = parseInt(currentLessonId)
-    const currentStepIndex = courseFlow.flow.findIndex(
-      step => step.type === 'lesson' && step.id === currentLessonNum
-    )
     
-    if (currentStepIndex !== -1 && currentStepIndex < courseFlow.flow.length - 1) {
-      const nextStep = courseFlow.flow[currentStepIndex + 1]
+    try {
+      const currentStepIndex = courseFlow.flow.findIndex(
+        step => step.type === 'lesson' && step.id === currentLessonNum
+      )
       
-      if (nextStep.type === 'lesson') {
-        return { type: 'lesson', text: 'Next Lesson' }
-      } else if (nextStep.type === 'personalization') {
-        // Capitalize and format the personalization ID
-        const formattedName = nextStep.id.charAt(0).toUpperCase() + nextStep.id.slice(1)
-        return { type: 'personalization', text: `Add ${formattedName} Info` }
+      if (currentStepIndex !== -1 && currentStepIndex < courseFlow.flow.length - 1) {
+        const nextStep = courseFlow.flow[currentStepIndex + 1]
+        
+        if (nextStep?.type === 'lesson') {
+          return { type: 'lesson', text: 'Next Lesson' }
+        } else if (nextStep?.type === 'personalization' && nextStep?.id) {
+          // Capitalize and format the personalization ID
+          const formattedName = nextStep.id.charAt(0).toUpperCase() + nextStep.id.slice(1)
+          return { type: 'personalization', text: `Add ${formattedName} Info` }
+        }
       }
+    } catch (error) {
+      console.error('Error in getNextStepInfo:', error)
     }
     
     return { type: 'lesson', text: 'Next Lesson' }
