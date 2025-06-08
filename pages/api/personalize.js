@@ -15,12 +15,19 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Missing userId or profileData' });
     }
 
-    // 1. Save personalization data
+    // 1. Save personalization data (preserve existing user_status)
+    const { data: existingProfile } = await supabase
+      .from('user_profiles')
+      .select('user_status')
+      .eq('user_id', userId)
+      .single();
+
     const { error: profileError } = await supabase
       .from('user_profiles')
       .upsert({ 
         user_id: userId, 
         profile_data: profileData,
+        user_status: existingProfile?.user_status || 'pending', // Preserve existing status
         updated_at: new Date().toISOString()
       });
 
@@ -51,15 +58,21 @@ async function generateTTSRequests(userId, profileData) {
   const requests = [];
   
   try {
-    // Load all lessons and sentences
-    for (let lessonId = 1; lessonId <= 32; lessonId++) {
+    // Load sentences database first
+    const sentencesModule = await import(`../../data/courses/en-es/sentences.json`);
+    const sentences = sentencesModule.default;
+
+    // Only process lessons that actually exist
+    const existingLessons = [1]; // Start with lessons we know exist
+    
+    // You can expand this array as you create more lessons:
+    // const existingLessons = [1, 2, 3, 4, 5]; // etc.
+    
+    for (const lessonId of existingLessons) {
       try {
         // Dynamic import for lesson data
         const lessonModule = await import(`../../data/courses/en-es/lessons/lesson-${lessonId.toString().padStart(3, '0')}.json`);
-        const sentencesModule = await import(`../../data/courses/en-es/sentences.json`);
-        
         const lesson = lessonModule.default;
-        const sentences = sentencesModule.default;
 
         // Process each section that has audio
         const sectionsWithAudio = ['listenRead', 'listenRepeat', 'translation'];
@@ -97,8 +110,8 @@ async function generateTTSRequests(userId, profileData) {
           }
         }
       } catch (lessonError) {
-        console.error(`Error processing lesson ${lessonId}:`, lessonError);
-        // Continue with other lessons
+        console.log(`Lesson ${lessonId} not found, skipping:`, lessonError.message);
+        // Continue with other lessons - this is expected for lessons that don't exist yet
       }
     }
 
