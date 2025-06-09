@@ -1,0 +1,281 @@
+<!-- scripts/tts/templates/edit.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TTS Generator - Edit Request</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .editor-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .sentence-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: #f9fafb;
+            border-radius: 6px;
+        }
+        .sentence-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .script-editor {
+            width: 100%;
+            min-height: 300px;
+            padding: 15px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 14px;
+            resize: vertical;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        .btn:hover {
+            opacity: 0.9;
+        }
+        .pause-hint {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-size: 13px;
+            color: #1e40af;
+        }
+        .audio-type-info {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        .loading {
+            display: none;
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>✏️ Edit TTS Request</h1>
+        <p>File: <strong>{{ request.audio_filename }}</strong> | Lesson {{ request.lesson_id }}</p>
+        <a href="{{ url_for('index') }}">← Back to Requests</a>
+    </div>
+
+    <div class="audio-type-info">
+        {% if 'sentence-1' in request.audio_filename %}
+        <h3>📢 Audio File 1: Bilingual Translation Practice</h3>
+        <p><strong>Format:</strong> English → [pause for translation] → Spanish → [short pause] → Next sentence</p>
+        <p><strong>Usage:</strong> Listen & Read (plays through), Translation practice (pause to translate)</p>
+        {% elif 'sentence-2' in request.audio_filename %}
+        <h3>🔄 Audio File 2: Spanish Repetition Practice</h3>
+        <p><strong>Format:</strong> Spanish sentence → [pause] → repeat 5 times → [longer pause] → Next sentence</p>
+        <p><strong>Usage:</strong> Listen & Repeat practice</p>
+        {% endif %}
+    </div>
+
+    <div class="editor-section">
+        <h3>📝 Edit Sentences</h3>
+        <p>Review and correct the translations before generating audio:</p>
+        
+        <div id="sentences-editor">
+            {% for sentence in sentences %}
+            <div class="sentence-row">
+                <div>
+                    <label><strong>English:</strong></label>
+                    <input type="text" class="sentence-input english-input" 
+                           value="{{ sentence.english }}" data-index="{{ loop.index0 }}">
+                </div>
+                <div>
+                    <label><strong>Spanish:</strong></label>
+                    <input type="text" class="sentence-input spanish-input" 
+                           value="{{ sentence.spanish }}" data-index="{{ loop.index0 }}">
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <button class="btn btn-secondary" onclick="generateScript()">🔄 Update Script</button>
+    </div>
+
+    <div class="editor-section">
+        <h3>🎙️ TTS Script</h3>
+        <div class="pause-hint">
+            <strong>Script Format:</strong> [en] English text [3s] [es] Spanish text [1s] - Pauses calculated automatically
+        </div>
+        
+        <textarea id="script-editor" class="script-editor" placeholder="Script will appear here..."></textarea>
+        
+        <div style="margin-top: 15px;">
+            <button class="btn btn-primary" onclick="previewAudio()">🎧 Preview Audio</button>
+            <button class="btn btn-success" onclick="generateFinalAudio()">✅ Generate & Save</button>
+            <span class="loading" id="loading">Processing...</span>
+        </div>
+    </div>
+
+    <form id="generate-form" style="display: none;" method="POST" action="{{ url_for('generate_audio') }}">
+        <input type="hidden" name="request_id" value="{{ request.id }}">
+        <input type="hidden" name="user_id" value="{{ request.user_id }}">
+        <input type="hidden" name="filename" value="{{ request.audio_filename }}">
+        <input type="hidden" name="script_text" id="script-input">
+    </form>
+
+    <script>
+        // Calculate pause duration based on text length
+        function calculatePause(text, type) {
+            const charCount = text.trim().length;
+            
+            if (type === 'translation') {
+                return Math.max(3.0, charCount * 0.2 + 2.0);
+            } else if (type === 'repetition') {
+                return Math.max(2.0, charCount * 0.15 + 1.0);
+            } else {
+                return 1.0; // between sentences
+            }
+        }
+
+        function generateScript() {
+            const englishInputs = document.querySelectorAll('.english-input');
+            const spanishInputs = document.querySelectorAll('.spanish-input');
+            const audioType = '{{ request.audio_filename }}';
+            
+            let script = '';
+            
+            if (audioType.includes('sentence-1')) {
+                // Bilingual format: English → pause → Spanish → pause
+                for (let i = 0; i < englishInputs.length; i++) {
+                    const english = englishInputs[i].value.trim();
+                    const spanish = spanishInputs[i].value.trim();
+                    
+                    if (english && spanish) {
+                        // Ensure we get valid numbers
+                        const translationPause = Math.round(calculatePause(spanish, 'translation') * 10) / 10;
+                        const betweenPause = 1.0;
+                        
+                        script += `[en] ${english} [${translationPause}s] [es] ${spanish} [${betweenPause}s] `;
+                    }
+                }
+            } else if (audioType.includes('sentence-2')) {
+                // Repetition format: Spanish 5x with pauses
+                for (let i = 0; i < spanishInputs.length; i++) {
+                    const spanish = spanishInputs[i].value.trim();
+                    
+                    if (spanish) {
+                        // Ensure we get valid numbers
+                        const repetitionPause = Math.round(calculatePause(spanish, 'repetition') * 10) / 10;
+                        
+                        // Repeat 5 times
+                        for (let rep = 0; rep < 5; rep++) {
+                            script += `[es] ${spanish} [${repetitionPause}s] `;
+                        }
+                    }
+                }
+            }
+            
+            document.getElementById('script-editor').value = script.trim();
+        }
+
+        function previewAudio() {
+            const scriptText = document.getElementById('script-editor').value;
+            if (!scriptText.trim()) {
+                alert('Please generate a script first!');
+                return;
+            }
+            
+            document.getElementById('loading').style.display = 'inline';
+            
+            // TODO: Implement preview functionality
+            setTimeout(() => {
+                document.getElementById('loading').style.display = 'none';
+                alert('Preview functionality - would generate temporary audio file');
+            }, 1000);
+        }
+
+        function generateFinalAudio() {
+            const scriptText = document.getElementById('script-editor').value;
+            if (!scriptText.trim()) {
+                alert('Please generate a script first!');
+                return;
+            }
+            
+            if (!confirm('Generate final audio file? This will save to Supabase Storage.')) {
+                return;
+            }
+            
+            document.getElementById('script-input').value = scriptText;
+            document.getElementById('loading').style.display = 'inline';
+            
+            const form = document.getElementById('generate-form');
+            const formData = new FormData(form);
+            
+            fetch('{{ url_for("generate_audio") }}', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('loading').style.display = 'none';
+                
+                if (data.success) {
+                    alert('✅ Audio generated successfully!\nURL: ' + data.audio_url);
+                    window.location.href = '{{ url_for("index") }}';
+                } else {
+                    alert('❌ Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                document.getElementById('loading').style.display = 'none';
+                alert('❌ Network error: ' + error);
+            });
+        }
+
+        // Auto-generate script on page load
+        window.onload = function() {
+            generateScript();
+        };
+    </script>
+</body>
+</html>

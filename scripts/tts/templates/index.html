@@ -1,0 +1,167 @@
+<!-- scripts/tts/templates/index.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TTS Generator - Pending Requests</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .request-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+            border-left: 4px solid #3b82f6;
+        }
+        .request-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .request-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1f2937;
+        }
+        .status-badge {
+            background: #fbbf24;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+        .request-details {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+        .detail-row {
+            display: flex;
+            margin-bottom: 8px;
+        }
+        .detail-label {
+            font-weight: bold;
+            width: 120px;
+            color: #374151;
+        }
+        .detail-value {
+            color: #6b7280;
+        }
+        .text-preview {
+            background: #f3f4f6;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 14px;
+            color: #374151;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+        .action-btn {
+            background: #3b82f6;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+        }
+        .action-btn:hover {
+            background: #2563eb;
+        }
+        .no-requests {
+            text-align: center;
+            color: #6b7280;
+            padding: 40px;
+            background: white;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎙️ TTS Generator</h1>
+        <p>Review and generate personalized audio files</p>
+    </div>
+
+    {% if requests %}
+        {% for request in requests %}
+        <div class="request-card">
+            <div class="request-header">
+                <div class="request-title">
+                    {{ request.audio_filename }} - Lesson {{ request.lesson_id }}
+                </div>
+                <div class="status-badge">{{ request.status }}</div>
+            </div>
+            
+            <div class="request-details">
+                <div class="detail-row">
+                    <div class="detail-label">User ID:</div>
+                    <div class="detail-value">{{ request.user_id }}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Sections:</div>
+                    <div class="detail-value">{{ request.section_name }}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Sentences:</div>
+                    <div class="detail-value">{{ request.sentence_count }}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Created:</div>
+                    <div class="detail-value">{{ request.created_at }}</div>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <strong>Spanish Text Preview:</strong>
+                <div class="text-preview">{{ request.personalized_text[:200] }}{% if request.personalized_text|length > 200 %}...{% endif %}</div>
+            </div>
+
+            {% if request.native_text %}
+            <div style="margin-bottom: 15px;">
+                <strong>English Text Preview:</strong>
+                <div class="text-preview">{{ request.native_text[:200] }}{% if request.native_text|length > 200 %}...{% endif %}</div>
+            </div>
+            {% endif %}
+
+            <a href="{{ url_for('edit_request', request_id=request.id) }}" class="action-btn">
+                ✏️ Edit & Generate
+            </a>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="no-requests">
+            <h2>🎉 No Pending Requests</h2>
+            <p>All TTS requests have been processed!</p>
+        </div>
+    {% endif %}
+
+    <script>
+        // Auto-refresh every 30 seconds
+        setTimeout(() => {
+            window.location.reload();
+        }, 30000);
+    </script>
+</body>
+</html>
