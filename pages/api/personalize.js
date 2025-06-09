@@ -87,7 +87,7 @@ async function generateTTSRequests(userId, profileData) {
     const sentences = sentencesModule.default;
 
     // Only process lessons that actually exist
-    const existingLessons = [1]; // Start with lessons we know exist
+    const existingLessons = [1];
     
     for (const lessonId of existingLessons) {
       try {
@@ -95,26 +95,50 @@ async function generateTTSRequests(userId, profileData) {
         const lessonModule = await import(`../../data/courses/en-es/lessons/lesson-${lessonId.toString().padStart(3, '0')}.json`);
         const lesson = lessonModule.default;
 
-        // Process sections that have audio (section-level TTS requests)
+        // Group sections by their audio files to avoid duplicates
+        const audioFileGroups = {};
+        
         const sectionsWithAudio = [
           { name: 'listenRead', repeatCount: 1 },
           { name: 'listenRepeat', repeatCount: 5 },
           { name: 'translation', repeatCount: 1 }
         ];
         
+        // Group sections by audio filename
         for (const section of sectionsWithAudio) {
           const sectionData = lesson.sections[section.name];
           if (!sectionData || !sectionData.sentence_ids || !sectionData.audio) continue;
 
-          // Build complete text for this section (all 10 sentences)
-          const sectionSentences = [];
+          const audioFile = sectionData.audio;
           
-          for (const sentenceId of sectionData.sentence_ids) {
+          if (!audioFileGroups[audioFile]) {
+            audioFileGroups[audioFile] = {
+              filename: audioFile,
+              sections: [],
+              sentenceIds: sectionData.sentence_ids
+            };
+          }
+          
+          audioFileGroups[audioFile].sections.push({
+            name: section.name,
+            repeatCount: section.repeatCount
+          });
+        }
+
+        // Create one TTS request per unique audio file
+        for (const [audioFile, group] of Object.entries(audioFileGroups)) {
+          // Determine repeat count - use the maximum from all sections using this file
+          const maxRepeatCount = Math.max(...group.sections.map(s => s.repeatCount));
+          
+          // Build complete text for this audio file
+          const audioSentences = [];
+          
+          for (const sentenceId of group.sentenceIds) {
             const sentence = sentences[sentenceId.toString()];
             if (!sentence) continue;
 
             // Personalize the sentence if it has variables
-            let finalText = sentence.target; // Spanish text
+            let finalText = sentence.target;
             
             if (sentence.variables && sentence.variables.length > 0) {
               sentence.variables.forEach(variable => {
@@ -125,23 +149,24 @@ async function generateTTSRequests(userId, profileData) {
               });
             }
 
-            // Add to section sentences (repeated based on section type)
-            for (let i = 0; i < section.repeatCount; i++) {
-              sectionSentences.push(finalText);
+            // Add to audio sentences (repeated based on max repeat count for this file)
+            for (let i = 0; i < maxRepeatCount; i++) {
+              audioSentences.push(finalText);
             }
           }
 
-          // Create one TTS request per section with all sentences combined
-          if (sectionSentences.length > 0) {
-            const combinedText = sectionSentences.join('. '); // Join with periods
+          // Create one TTS request per audio file
+          if (audioSentences.length > 0) {
+            const combinedText = audioSentences.join('. ');
             
             requests.push({
               user_id: userId,
               lesson_id: lessonId,
-              section_name: section.name,
-              audio_filename: sectionData.audio, // Original filename to replace
+              section_name: group.sections.map(s => s.name).join(','), // List all sections using this file
+              audio_filename: audioFile,
               combined_text: combinedText,
-              sentence_count: sectionData.sentence_ids.length
+              sentence_count: group.sentenceIds.length,
+              repeat_count: maxRepeatCount
             });
           }
         }
@@ -168,7 +193,7 @@ async function generateTTSRequests(userId, profileData) {
         return 0;
       }
 
-      console.log(`Created ${requests.length} section-level TTS requests for user ${userId}`);
+      console.log(`Created ${requests.length} unique audio file TTS requests for user ${userId}`);
       return requests.length;
     }
 
