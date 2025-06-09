@@ -89,53 +89,64 @@ async function generateTTSRequests(userId, profileData) {
     // Only process lessons that actually exist
     const existingLessons = [1]; // Start with lessons we know exist
     
-    // You can expand this array as you create more lessons:
-    // const existingLessons = [1, 2, 3, 4, 5]; // etc.
-    
     for (const lessonId of existingLessons) {
       try {
         // Dynamic import for lesson data
         const lessonModule = await import(`../../data/courses/en-es/lessons/lesson-${lessonId.toString().padStart(3, '0')}.json`);
         const lesson = lessonModule.default;
 
-        // Process each section that has audio
-        const sectionsWithAudio = ['listenRead', 'listenRepeat', 'translation'];
+        // Process sections that have audio (section-level TTS requests)
+        const sectionsWithAudio = [
+          { name: 'listenRead', repeatCount: 1 },
+          { name: 'listenRepeat', repeatCount: 5 },
+          { name: 'translation', repeatCount: 1 }
+        ];
         
-        for (const sectionName of sectionsWithAudio) {
-          const section = lesson.sections[sectionName];
-          if (!section || !section.sentence_ids) continue;
+        for (const section of sectionsWithAudio) {
+          const sectionData = lesson.sections[section.name];
+          if (!sectionData || !sectionData.sentence_ids || !sectionData.audio) continue;
 
-          // Process each sentence in the section
-          for (const sentenceId of section.sentence_ids) {
+          // Build complete text for this section (all 10 sentences)
+          const sectionSentences = [];
+          
+          for (const sentenceId of sectionData.sentence_ids) {
             const sentence = sentences[sentenceId.toString()];
-            if (!sentence || !sentence.variables || sentence.variables.length === 0) continue;
+            if (!sentence) continue;
 
-            // Personalize the sentence
-            let personalizedText = sentence.target; // Spanish text
-            let hasPersonalization = false;
-
-            sentence.variables.forEach(variable => {
-              const value = profileData[variable];
-              if (value) {
-                personalizedText = personalizedText.replace(`{${variable}}`, value);
-                hasPersonalization = true;
-              }
-            });
-
-            // Only create TTS request if sentence was actually personalized
-            if (hasPersonalization) {
-              requests.push({
-                user_id: userId,
-                lesson_id: lessonId,
-                sentence_id: sentenceId,
-                personalized_text: personalizedText
+            // Personalize the sentence if it has variables
+            let finalText = sentence.target; // Spanish text
+            
+            if (sentence.variables && sentence.variables.length > 0) {
+              sentence.variables.forEach(variable => {
+                const value = profileData[variable];
+                if (value) {
+                  finalText = finalText.replace(`{${variable}}`, value);
+                }
               });
             }
+
+            // Add to section sentences (repeated based on section type)
+            for (let i = 0; i < section.repeatCount; i++) {
+              sectionSentences.push(finalText);
+            }
+          }
+
+          // Create one TTS request per section with all sentences combined
+          if (sectionSentences.length > 0) {
+            const combinedText = sectionSentences.join('. '); // Join with periods
+            
+            requests.push({
+              user_id: userId,
+              lesson_id: lessonId,
+              section_name: section.name,
+              audio_filename: sectionData.audio, // Original filename to replace
+              combined_text: combinedText,
+              sentence_count: sectionData.sentence_ids.length
+            });
           }
         }
       } catch (lessonError) {
         console.log(`Lesson ${lessonId} not found, skipping:`, lessonError.message);
-        // Continue with other lessons - this is expected for lessons that don't exist yet
       }
     }
 
@@ -143,14 +154,21 @@ async function generateTTSRequests(userId, profileData) {
     if (requests.length > 0) {
       const { data, error } = await supabaseAdmin
         .from('tts_requests')
-        .insert(requests);
+        .insert(requests.map(req => ({
+          user_id: req.user_id,
+          lesson_id: req.lesson_id,
+          section_name: req.section_name,
+          audio_filename: req.audio_filename,
+          personalized_text: req.combined_text,
+          sentence_count: req.sentence_count
+        })));
 
       if (error) {
         console.error('Error inserting TTS requests:', error);
         return 0;
       }
 
-      console.log(`Created ${requests.length} TTS requests for user ${userId}`);
+      console.log(`Created ${requests.length} section-level TTS requests for user ${userId}`);
       return requests.length;
     }
 
