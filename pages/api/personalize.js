@@ -21,21 +21,39 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Missing userId or profileData' });
     }
 
-    // 1. Save personalization data (preserve existing user_status)
+    // 1. Save personalization data (handle existing records properly)
     const { data: existingProfile } = await supabaseAdmin
       .from('user_profiles')
-      .select('user_status')
+      .select('user_status, id')
       .eq('user_id', userId)
       .single();
 
-    const { error: profileError } = await supabaseAdmin
-      .from('user_profiles')
-      .upsert({ 
-        user_id: userId, 
-        profile_data: profileData,
-        user_status: existingProfile?.user_status || 'pending', // Preserve existing status
-        updated_at: new Date().toISOString()
-      });
+    let profileError;
+    
+    if (existingProfile) {
+      // Update existing record
+      const { error } = await supabaseAdmin
+        .from('user_profiles')
+        .update({ 
+          profile_data: profileData,
+          user_status: existingProfile.user_status, // Preserve existing status
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', userId);
+      profileError = error;
+    } else {
+      // Insert new record
+      const { error } = await supabaseAdmin
+        .from('user_profiles')
+        .insert({ 
+          user_id: userId, 
+          profile_data: profileData,
+          user_status: 'pending',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        });
+      profileError = error;
+    }
 
     if (profileError) {
       console.error('Error saving profile:', profileError);
