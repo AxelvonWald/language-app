@@ -87,10 +87,7 @@ async function generateTTSRequests(userId, profileData) {
     const sentences = sentencesModule.default;
 
     // Only process lessons that actually exist
-    const existingLessons = [1]; // Start with lessons we know exist
-    
-    // You can expand this array as you create more lessons:
-    // const existingLessons = [1, 2, 3, 4, 5]; // etc.
+    const existingLessons = [1];
     
     for (const lessonId of existingLessons) {
       try {
@@ -98,44 +95,89 @@ async function generateTTSRequests(userId, profileData) {
         const lessonModule = await import(`../../data/courses/en-es/lessons/lesson-${lessonId.toString().padStart(3, '0')}.json`);
         const lesson = lessonModule.default;
 
-        // Process each section that has audio
-        const sectionsWithAudio = ['listenRead', 'listenRepeat', 'translation'];
+        // Group sections by their audio files to avoid duplicates
+        const audioFileGroups = {};
         
-        for (const sectionName of sectionsWithAudio) {
-          const section = lesson.sections[sectionName];
-          if (!section || !section.sentence_ids) continue;
+        const sectionsWithAudio = [
+          { name: 'listenRead', repeatCount: 1 },
+          { name: 'listenRepeat', repeatCount: 5 },
+          { name: 'translation', repeatCount: 1 }
+        ];
+        
+        // Group sections by audio filename
+        for (const section of sectionsWithAudio) {
+          const sectionData = lesson.sections[section.name];
+          if (!sectionData || !sectionData.sentence_ids || !sectionData.audio) continue;
 
-          // Process each sentence in the section
-          for (const sentenceId of section.sentence_ids) {
+          const audioFile = sectionData.audio;
+          
+          if (!audioFileGroups[audioFile]) {
+            audioFileGroups[audioFile] = {
+              filename: audioFile,
+              sections: [],
+              sentenceIds: sectionData.sentence_ids
+            };
+          }
+          
+          audioFileGroups[audioFile].sections.push({
+            name: section.name,
+            repeatCount: section.repeatCount
+          });
+        }
+
+        // Create one TTS request per unique audio file
+        for (const [audioFile, group] of Object.entries(audioFileGroups)) {
+          // Determine repeat count - use the maximum from all sections using this file
+          const maxRepeatCount = Math.max(...group.sections.map(s => s.repeatCount));
+          
+          // Build complete text for this audio file  
+          const audioSentences = [];
+          const nativeSentences = []; // Add native language tracking
+          
+          for (const sentenceId of group.sentenceIds) {
             const sentence = sentences[sentenceId.toString()];
-            if (!sentence || !sentence.variables || sentence.variables.length === 0) continue;
+            if (!sentence) continue;
 
-            // Personalize the sentence
-            let personalizedText = sentence.target; // Spanish text
-            let hasPersonalization = false;
-
-            sentence.variables.forEach(variable => {
-              const value = profileData[variable];
-              if (value) {
-                personalizedText = personalizedText.replace(`{${variable}}`, value);
-                hasPersonalization = true;
-              }
-            });
-
-            // Only create TTS request if sentence was actually personalized
-            if (hasPersonalization) {
-              requests.push({
-                user_id: userId,
-                lesson_id: lessonId,
-                sentence_id: sentenceId,
-                personalized_text: personalizedText
+            // Personalize both target (Spanish) and native (English) sentences
+            let finalTargetText = sentence.target;
+            let finalNativeText = sentence.native || sentence.fallback_native || '';
+            
+            if (sentence.variables && sentence.variables.length > 0) {
+              sentence.variables.forEach(variable => {
+                const value = profileData[variable];
+                if (value) {
+                  finalTargetText = finalTargetText.replace(`{${variable}}`, value);
+                  finalNativeText = finalNativeText.replace(`{${variable}}`, value);
+                }
               });
             }
+
+            // Add to sentences (repeated based on max repeat count for this file)
+            for (let i = 0; i < maxRepeatCount; i++) {
+              audioSentences.push(finalTargetText);
+              nativeSentences.push(finalNativeText);
+            }
+          }
+
+          // Create one TTS request per audio file
+          if (audioSentences.length > 0) {
+            const combinedTargetText = audioSentences.join('. ');
+            const combinedNativeText = nativeSentences.join('. ');
+            
+            requests.push({
+              user_id: userId,
+              lesson_id: lessonId,
+              section_name: group.sections.map(s => s.name).join(','),
+              audio_filename: audioFile,
+              combined_target_text: combinedTargetText,
+              combined_native_text: combinedNativeText,
+              sentence_count: group.sentenceIds.length,
+              repeat_count: maxRepeatCount
+            });
           }
         }
       } catch (lessonError) {
         console.log(`Lesson ${lessonId} not found, skipping:`, lessonError.message);
-        // Continue with other lessons - this is expected for lessons that don't exist yet
       }
     }
 
@@ -143,14 +185,22 @@ async function generateTTSRequests(userId, profileData) {
     if (requests.length > 0) {
       const { data, error } = await supabaseAdmin
         .from('tts_requests')
-        .insert(requests);
+        .insert(requests.map(req => ({
+          user_id: req.user_id,
+          lesson_id: req.lesson_id,
+          section_name: req.section_name,
+          audio_filename: req.audio_filename,
+          personalized_text: req.combined_target_text,
+          native_text: req.combined_native_text, // Add native text column
+          sentence_count: req.sentence_count
+        })));
 
       if (error) {
         console.error('Error inserting TTS requests:', error);
         return 0;
       }
 
-      console.log(`Created ${requests.length} TTS requests for user ${userId}`);
+      console.log(`Created ${requests.length} unique audio file TTS requests for user ${userId}`);
       return requests.length;
     }
 
