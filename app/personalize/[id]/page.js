@@ -23,6 +23,61 @@ export default function PersonalizePage({ params }) {
 
   const personalizationId = params.id;
 
+// Load form configuration and course flow
+  useEffect(() => {
+    const loadConfigs = async () => {
+      try {
+        console.log('🔍 Loading configs for personalizationId:', personalizationId)
+        
+        const [formsModule, flowModule] = await Promise.all([
+          import('../../../data/courses/en-es/personalization-forms.json'),
+          import('../../../data/courses/en-es/course-flow.json')
+        ])
+        
+        const forms = formsModule.default
+        const flow = flowModule.default
+        
+        console.log('📝 Loaded forms object:', forms)
+        console.log('🔍 Looking for form with ID:', personalizationId)
+        console.log('📋 Available form IDs:', Object.keys(forms))
+        
+        if (!forms[personalizationId]) {
+          console.error('❌ Personalization form not found:', personalizationId)
+          console.error('Available forms:', Object.keys(forms))
+          router.push('/lessons/1')
+          return
+        }
+        
+        const selectedForm = forms[personalizationId]
+        console.log('✅ Found form config:', selectedForm)
+        console.log('📝 Form fields:', selectedForm.fields)
+        
+        setFormConfig(selectedForm)
+        setCourseFlow(flow)
+        
+        // Initialize form data with existing values
+        if (personalizationData) {
+          const initialData = {}
+          selectedForm.fields.forEach(field => {
+            if (personalizationData[field.id] !== undefined) {
+              initialData[field.id] = personalizationData[field.id]
+            }
+          })
+          console.log('🔄 Initialized form data:', initialData)
+          setFormData(initialData)
+        }
+        
+      } catch (error) {
+        console.error('💥 Error loading form config:', error)
+        router.push('/lessons/1')
+      } finally {
+        setLoadingConfig(false)
+      }
+    }
+
+    loadConfigs()
+  }, [personalizationId, personalizationData, router])
+
   // Load form configuration and course flow
   useEffect(() => {
     const loadConfigs = async () => {
