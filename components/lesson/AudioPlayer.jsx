@@ -8,7 +8,7 @@ export default function AudioPlayer({
   audioPath, 
   lessonId, 
   sectionName,
-  userId = null, // For personalized audio later
+  userId = null,
   fallbackToTTS = false 
 }) {
   const audioRef = useRef(null);
@@ -23,66 +23,153 @@ export default function AudioPlayer({
   const [isLoading, setIsLoading] = useState(false);
   const [audioUrl, setAudioUrl] = useState(null);
   const [audioError, setAudioError] = useState(false);
+  const [audioSource, setAudioSource] = useState('none'); // Track which source we're using
 
-  // Load audio URL (Supabase Storage or fallback)
+  // Load audio URL with proper fallback chain
   useEffect(() => {
     loadAudioUrl();
   }, [audioPath, lessonId, sectionName, userId]);
 
+  const checkForPersonalizedAudio = async (userId, lessonId, sectionName, audioPath) => {
+    try {
+      console.log('🔍 Checking for personalized audio:', { userId, lessonId, sectionName, audioPath });
+      
+      // Method 1: Check database for completed TTS requests
+      const { data: ttsRequest, error } = await supabase
+        .from('tts_requests')
+        .select('audio_url, audio_filename, section_name')
+        .eq('user_id', userId)
+        .eq('lesson_id', lessonId)
+        .eq('audio_filename', audioPath) // Match the exact filename
+        .eq('status', 'completed')
+        .single();
+        
+      if (!error && ttsRequest?.audio_url) {
+        console.log('✅ Found personalized audio in database:', ttsRequest.audio_url);
+        
+        // Test if URL is accessible
+        try {
+          const response = await fetch(ttsRequest.audio_url, { method: 'HEAD' });
+          if (response.ok) {
+            return { url: ttsRequest.audio_url, source: 'database' };
+          } else {
+            console.log('⚠️ Database URL not accessible:', response.status);
+          }
+        } catch (fetchError) {
+          console.log('⚠️ Database URL fetch failed:', fetchError.message);
+        }
+      } else if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+        console.log('⚠️ Database query error:', error.message);
+      } else {
+        console.log('ℹ️ No completed TTS request found in database');
+      }
+      
+      // Method 2: Try constructed path (fallback)
+      const paddedLessonId = lessonId.toString().padStart(3, '0');
+      const constructedPath = `personalized/${userId}/lesson-${paddedLessonId}-${audioPath}`;
+      console.log('🔍 Trying constructed path:', constructedPath);
+      
+      const { data } = supabase.storage.from('audio').getPublicUrl(constructedPath);
+      
+      try {
+        const response = await fetch(data.publicUrl, { method: 'HEAD' });
+        if (response.ok) {
+          console.log('✅ Found personalized audio at constructed path:', data.publicUrl);
+          return { url: data.publicUrl, source: 'constructed' };
+        } else {
+          console.log('⚠️ Constructed path not accessible:', response.status);
+        }
+      } catch (fetchError) {
+        console.log('⚠️ Constructed path fetch failed:', fetchError.message);
+      }
+      
+      console.log('❌ No personalized audio found');
+      return null;
+    } catch (error) {
+      console.error('❌ Error checking personalized audio:', error);
+      return null;
+    }
+  };
+
   const loadAudioUrl = async () => {
     setIsLoading(true);
     setAudioError(false);
+    setAudioSource('none');
 
     try {
-      // Option 1: Check for personalized audio (when userId is provided)
+      console.log('🎵 Loading audio for:', { audioPath, lessonId, sectionName, userId });
+
+      // Step 1: Check for personalized TTS audio (highest priority)
       if (userId) {
-        const personalizedPath = `personalized/user-${userId}-lesson-${lessonId}-${sectionName}.mp3`;
-        const { data: personalizedData } = supabase.storage
-          .from('audio')
-          .getPublicUrl(personalizedPath);
-        
-        // Test if personalized audio exists
-        const response = await fetch(personalizedData.publicUrl, { method: 'HEAD' });
-        if (response.ok) {
-          setAudioUrl(personalizedData.publicUrl);
+        const personalizedResult = await checkForPersonalizedAudio(userId, lessonId, sectionName, audioPath);
+        if (personalizedResult) {
+          setAudioUrl(personalizedResult.url);
+          setAudioSource(`personalized-${personalizedResult.source}`);
+          setIsLoading(false);
+          console.log(`✅ Using personalized audio (${personalizedResult.source}):`, personalizedResult.url);
           return;
         }
       }
 
-      // Option 2: Check for lesson audio in Supabase Storage
-      const lessonPath = `en-es/lesson-${lessonId.toString().padStart(3, '0')}/${audioPath}`;
-      const { data: lessonData } = supabase.storage
-        .from('audio')
-        .getPublicUrl(lessonPath);
+      // Step 2: Check for static audio in Supabase Storage
+      const paddedLessonId = lessonId.toString().padStart(3, '0');
+      const staticPath = `static/en-es/lesson-${paddedLessonId}/${audioPath}`;
+      console.log('🔍 Checking static path:', staticPath);
+      
+      const { data: staticData } = supabase.storage.from('audio').getPublicUrl(staticPath);
 
-      // Test if lesson audio exists in Supabase
-      const response = await fetch(lessonData.publicUrl, { method: 'HEAD' });
-      if (response.ok) {
-        setAudioUrl(lessonData.publicUrl);
-        return;
+      try {
+        const staticResponse = await fetch(staticData.publicUrl, { method: 'HEAD' });
+        if (staticResponse.ok) {
+          setAudioUrl(staticData.publicUrl);
+          setAudioSource('static-supabase');
+          setIsLoading(false);
+          console.log('✅ Using static Supabase audio:', staticData.publicUrl);
+          return;
+        } else {
+          console.log('⚠️ Static Supabase audio not found:', staticResponse.status);
+        }
+      } catch (fetchError) {
+        console.log('⚠️ Static Supabase fetch failed:', fetchError.message);
       }
 
-      // Option 3: Fallback to local public files (for development)
-      const localPath = `/audio/en-es/lesson-${lessonId.toString().padStart(3, '0')}/${audioPath}`;
-      const localResponse = await fetch(localPath, { method: 'HEAD' });
-      if (localResponse.ok) {
-        setAudioUrl(localPath);
-        return;
+      // Step 3: Fallback to local files (development only)
+      const localPath = `/audio/en-es/lesson-${paddedLessonId}/${audioPath}`;
+      console.log('🔍 Checking local path:', localPath);
+      
+      try {
+        const localResponse = await fetch(localPath, { method: 'HEAD' });
+        if (localResponse.ok) {
+          setAudioUrl(localPath);
+          setAudioSource('local');
+          setIsLoading(false);
+          console.log('✅ Using local audio:', localPath);
+          return;
+        } else {
+          console.log('⚠️ Local audio not found:', localResponse.status);
+        }
+      } catch (fetchError) {
+        console.log('⚠️ Local audio fetch failed:', fetchError.message);
       }
 
-      // Option 4: Web Speech API fallback (if enabled)
+      // Step 4: Web Speech API fallback (if enabled)
       if (fallbackToTTS) {
         setAudioUrl(null); // Will trigger TTS
+        setAudioSource('tts-fallback');
+        setIsLoading(false);
+        console.log('⚠️ Using TTS fallback');
         return;
       }
 
-      // No audio found
+      // No audio found anywhere
+      console.error('❌ No audio found for:', { audioPath, lessonId, sectionName });
       setAudioError(true);
-      console.error('No audio found for:', { audioPath, lessonId, sectionName });
+      setAudioSource('error');
 
     } catch (error) {
-      console.error('Error loading audio:', error);
+      console.error('❌ Error loading audio:', error);
       setAudioError(true);
+      setAudioSource('error');
     } finally {
       setIsLoading(false);
     }
@@ -276,6 +363,19 @@ export default function AudioPlayer({
 
   const progressPercentage = duration > 0 ? (currentTime / duration) * 100 : 0;
 
+  // Get audio source display for debugging
+  const getSourceDisplay = () => {
+    switch (audioSource) {
+      case 'personalized-database': return '🎙️ Personalized (DB)';
+      case 'personalized-constructed': return '🎙️ Personalized (Path)';
+      case 'static-supabase': return '📁 Static (Supabase)';
+      case 'local': return '💻 Local (Dev)';
+      case 'tts-fallback': return '🤖 TTS Fallback';
+      case 'error': return '❌ Error';
+      default: return '⏳ Loading...';
+    }
+  };
+
   // Error state
   if (audioError) {
     return (
@@ -302,6 +402,13 @@ export default function AudioPlayer({
           src={audioUrl}
           preload="metadata"
         />
+      )}
+      
+      {/* Audio Source Debug Info (remove in production) */}
+      {process.env.NODE_ENV === 'development' && (
+        <div style={{ fontSize: '12px', color: '#666', marginBottom: '8px' }}>
+          Source: {getSourceDisplay()}
+        </div>
       )}
       
       {/* Main Controls */}

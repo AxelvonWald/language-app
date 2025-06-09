@@ -35,7 +35,7 @@ class TTSManager:
         }
 
     def get_pending_requests(self):
-        """Get all pending TTS requests"""
+        """Get all pending TTS requests with lesson information"""
         response = self.supabase.table('tts_requests').select('*').eq('status', 'approved').execute()
         return response.data
 
@@ -102,9 +102,13 @@ class TTSManager:
         print("DEBUG: No audio segments generated")
         return None
 
-    def upload_audio(self, audio_data, user_id, filename):
-        """Upload audio to Supabase Storage"""
-        storage_path = f"personalized/{user_id}/{filename}"
+    def upload_audio(self, audio_data, user_id, lesson_id, filename):
+        """Upload audio to Supabase Storage with lesson ID in path"""
+        # NEW: Include lesson ID in the storage path
+        padded_lesson_id = str(lesson_id).zfill(3)  # Pad to 3 digits: 001, 002, etc.
+        storage_path = f"personalized/{user_id}/lesson-{padded_lesson_id}-{filename}"
+        
+        print(f"DEBUG: Uploading to storage path: {storage_path}")
         
         try:
             # Upload without upsert first
@@ -133,6 +137,7 @@ class TTSManager:
             
             # Get public URL
             public_url_response = self.supabase.storage.from_('audio').get_public_url(storage_path)
+            print(f"DEBUG: Generated public URL: {public_url_response}")
             return public_url_response
             
         except Exception as e:
@@ -186,10 +191,20 @@ def generate_audio():
         filename = request.form['filename']
         script_text = request.form['script_text']
         
+        # NEW: Get lesson_id from the request
+        # First, fetch the TTS request to get lesson_id
+        response = tts_manager.supabase.table('tts_requests').select('lesson_id').eq('id', request_id).single().execute()
+        
+        if not response.data:
+            return jsonify({'success': False, 'error': 'TTS request not found'})
+            
+        lesson_id = response.data['lesson_id']
+        
         print("=" * 50)
         print(f"GENERATE AUDIO DEBUG:")
         print(f"Request ID: {request_id}")
         print(f"User ID: {user_id}")
+        print(f"Lesson ID: {lesson_id}")  # NEW
         print(f"Filename: {filename}")
         print(f"Script length: {len(script_text)}")
         print(f"Script preview: {script_text[:100]}...")
@@ -208,8 +223,8 @@ def generate_audio():
             
             print(f"✅ MP3 export successful, size: {len(mp3_data)} bytes")
             
-            # Upload to Supabase
-            audio_url = tts_manager.upload_audio(mp3_data, user_id, filename)
+            # NEW: Upload to Supabase with lesson_id in path
+            audio_url = tts_manager.upload_audio(mp3_data, user_id, lesson_id, filename)
             
             if audio_url:
                 print(f"✅ Upload successful: {audio_url}")

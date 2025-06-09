@@ -86,7 +86,7 @@ async function generateTTSRequests(userId, profileData) {
     const sentences = sentencesModule.default;
 
     // Only process lessons that actually exist
-    const existingLessons = [1];
+    const existingLessons = [1, 2, 3, 4, 5];
 
     for (const lessonId of existingLessons) {
       try {
