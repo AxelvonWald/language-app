@@ -40,9 +40,6 @@ export default function Section({
 
   // Get appropriate instruction text for restOfDay section
   const getInstructionText = () => {
-    if (sectionName === 'restOfDay') {
-      return "Download both audio files and add to your playlist. Listen and repeat as much as you can until your next lesson."
-    }
     return instruction
   }
 
@@ -88,54 +85,7 @@ export default function Section({
           />
         </div>
       )}
-
-      {/* Rest of Day: Show download links instead of table */}
-      {sectionName === 'restOfDay' && (
-        <div className={styles.downloadSection}>
-          <h3 className={styles.downloadTitle}>Download Audio Files:</h3>
-          {(() => {
-            const downloads = getDownloadUrls()
-            return (
-              <div className={styles.downloadLinks}>
-                <div className={styles.downloadItem}>
-                  <h4 className={styles.downloadLabel}>{downloads.track1.label}</h4>
-                  <p className={styles.downloadDescription}>{downloads.track1.description}</p>
-                  <button 
-                    className={styles.downloadButton}
-                    onClick={() => {
-                      // Create download link
-                      const paddedLessonId = lessonId.toString().padStart(3, '0')
-                      const staticPath = `static/en-es/lesson${paddedLessonId}/${downloads.track1.filename}`
-                      // You'll need to implement the actual download logic here
-                      console.log('Download track 1:', staticPath)
-                    }}
-                  >
-                    📥 Download Track 1
-                  </button>
-                </div>
-                
-                <div className={styles.downloadItem}>
-                  <h4 className={styles.downloadLabel}>{downloads.track2.label}</h4>
-                  <p className={styles.downloadDescription}>{downloads.track2.description}</p>
-                  <button 
-                    className={styles.downloadButton}
-                    onClick={() => {
-                      // Create download link
-                      const paddedLessonId = lessonId.toString().padStart(3, '0')
-                      const staticPath = `static/en-es/lesson${paddedLessonId}/${downloads.track2.filename}`
-                      // You'll need to implement the actual download logic here
-                      console.log('Download track 2:', staticPath)
-                    }}
-                  >
-                    📥 Download Track 2
-                  </button>
-                </div>
-              </div>
-            )
-          })()}
-        </div>
-      )}
-      
+     
       {/* Show table for all sections EXCEPT restOfDay */}
       {sectionName !== 'restOfDay' && sentences && sentences.length > 0 && (
         <SentenceTable

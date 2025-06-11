@@ -12,50 +12,40 @@ export default function SentenceTable({ sentences, showColumns, className = "" }
     )
   }
 
-  // Determine which columns to show
-  const showTarget = showColumns.includes('target')
-  const showNative = showColumns.includes('native')
+  // Debug logs
+  console.log('🐛 SentenceTable showColumns:', showColumns)
 
   return (
     <div className={`${styles.tableContainer} ${className}`}>
       <table className={styles.sentenceTable}>
         <thead>
           <tr>
-            {showTarget && (
-              <th className={styles.tableHeader}>
-                Español
+            {/* Render headers in the order specified by showColumns */}
+            {showColumns.map((column, index) => (
+              <th key={column} className={styles.tableHeader}>
+                {column === 'target' ? 'Español' : 'English'}
               </th>
-            )}
-            {showNative && (
-              <th className={styles.tableHeader}>
-                English
-              </th>
-            )}
+            ))}
           </tr>
         </thead>
         <tbody>
           {sentences.map((sentence, index) => (
             <tr key={sentence.id || index} className={styles.sentenceRow}>
-              {showTarget && (
+              {/* Render cells in the order specified by showColumns */}
+              {showColumns.map((column, colIndex) => (
                 <td
-                  className={styles.targetCell}
-                  data-label="Español"
+                  key={`${sentence.id || index}-${column}`}
+                  className={column === 'target' ? styles.targetCell : styles.nativeCell}
+                  data-label={column === 'target' ? 'Español' : 'English'}
                 >
-                  <span className={styles.targetSentence}>
-                    {sentence.target || sentence.fallback_target}
+                  <span className={column === 'target' ? styles.targetSentence : styles.nativeSentence}>
+                    {column === 'target' 
+                      ? (sentence.target || sentence.fallback_target)
+                      : (sentence.native || sentence.fallback_native)
+                    }
                   </span>
                 </td>
-              )}
-              {showNative && (
-                <td
-                  className={styles.nativeCell}
-                  data-label="English"
-                >
-                  <span className={styles.nativeSentence}>
-                    {sentence.native || sentence.fallback_native}
-                  </span>
-                </td>
-              )}
+              ))}
             </tr>
           ))}
         </tbody>

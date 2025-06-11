@@ -1,5 +1,6 @@
 // app/lessons/[id]/page.js
 "use client";
+import { use } from 'react'
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AudioPlayer from "@/components/lesson/AudioPlayer";
@@ -11,6 +12,7 @@ import { supabase } from "@/lib/supabase";
 import styles from "./Lesson.module.css";
 
 export default function LessonPage({ params }) {
+  const resolvedParams = use(params)
   const router = useRouter();
 
   // Get data from useProgress hook
@@ -240,7 +242,7 @@ export default function LessonPage({ params }) {
         instruction={lessonData.sections.listenRead.instruction}
         audio={getAudioPath(lessonData.sections.listenRead.audio)}
         sentences={getSectionSentences("listenRead")}
-        showColumns={["target", "native"]}
+        showColumns={["native", "target"]}
         className={styles.section}
         lessonId={lessonId}
         sectionName="listenRead"
@@ -253,7 +255,7 @@ export default function LessonPage({ params }) {
         instruction={lessonData.sections.listenRepeat.instruction}
         audio={getAudioPath(lessonData.sections.listenRepeat.audio)}
         sentences={getSectionSentences("listenRepeat")}
-        showColumns={["target", "native"]}
+        showColumns={["native", "target"]}
         className={styles.section}
         lessonId={lessonId}
         sectionName="listenRepeat"
@@ -265,7 +267,7 @@ export default function LessonPage({ params }) {
         title="Write"
         instruction={lessonData.sections.write.instruction}
         sentences={getSectionSentences("write")}
-        showColumns={["target", "native"]}
+        showColumns={["native", "target"]}
         className={styles.section}
         lessonId={lessonId}
         sectionName="write"
@@ -290,7 +292,7 @@ export default function LessonPage({ params }) {
         title="Rest of the Day"
         instruction={lessonData.sections.restOfDay.instruction}
         sentences={getSectionSentences("restOfDay")}
-        showColumns={["target", "native"]}
+        //showColumns={["native", "target"]}
         className={styles.section}
         lessonId={lessonId}
         sectionName="restOfDay"
