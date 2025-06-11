@@ -1,0 +1,84 @@
+{
+  "id": 7,
+  "title": "Getting Help & Directions (PERSONALIZATION)",
+  "sections": {
+    "listenRead": {
+      "instruction": "Listen carefully to the pronunciation.",
+      "audio": "en-es-lesson007-1.mp3",
+      "sentence_ids": [
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70
+      ]
+    },
+    "listenRepeat": {
+      "instruction": "Repeat after the audio.",
+      "audio": "en-es-lesson007-2.mp3",
+      "sentence_ids": [
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70
+      ]
+    },
+    "write": {
+      "instruction": "Write these sentences from memory.",
+      "sentence_ids": [
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70
+      ]
+    },
+    "translation": {
+      "instruction": "Translate back to your native language.",
+      "audio": "en-es-lesson007-1.mp3",
+      "sentence_ids": [
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70
+      ]
+    },
+    "restOfDay": {
+      "instruction": "Practice these throughout the day when you have a moment.",
+      "sentence_ids": [
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70
+      ]
+    }
+  }
+}

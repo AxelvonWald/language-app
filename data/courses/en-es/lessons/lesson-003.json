@@ -1,29 +1,84 @@
 {
   "id": 3,
-  "title": "Basic Greetings",
+  "title": "Ser Foundation",
   "sections": {
     "listenRead": {
       "instruction": "Listen carefully to the pronunciation.",
-      "audio": "lesson-1-section-1.mp3",
-      "sentence_ids": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+      "audio": "en-es-lesson003-1.mp3",
+      "sentence_ids": [
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30
+      ]
     },
     "listenRepeat": {
       "instruction": "Repeat after the audio.",
-      "audio": "lesson-1-section-2.mp3",
-      "sentence_ids": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+      "audio": "en-es-lesson003-2.mp3",
+      "sentence_ids": [
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30
+      ]
     },
     "write": {
       "instruction": "Write these sentences from memory.",
-      "sentence_ids": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+      "sentence_ids": [
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30
+      ]
     },
     "translation": {
       "instruction": "Translate back to your native language.",
-      "audio": "lesson-1-section-1.mp3",
-      "sentence_ids": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+      "audio": "en-es-lesson003-1.mp3",
+      "sentence_ids": [
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30
+      ]
     },
     "restOfDay": {
       "instruction": "Practice these throughout the day when you have a moment.",
-      "sentence_ids": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+      "sentence_ids": [
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30
+      ]
     }
   }
 }

@@ -1,58 +1,367 @@
 {
   "1": {
     "id": 1,
-    "target": "Me llamo {name}",
-    "native": "My name is {name}",
-    "fallback_target": "Me llamo Alex",
-    "fallback_native": "My name is Alex", 
-    "variables": ["name"]
+    "target": "Hola.",
+    "native": "Hello."
   },
   "2": {
     "id": 2,
-    "target": "Soy de {country}",
-    "native": "I am from {country}",
-    "fallback_target": "Soy de España",
-    "fallback_native": "I am from Spain",
-    "variables": ["country"]
+    "target": "Buenos días.",
+    "native": "Good morning."
   },
   "3": {
     "id": 3,
-    "target": "¿Cómo estás?",
-    "native": "How are you?"
+    "target": "Buenas tardes.",
+    "native": "Good afternoon."
   },
   "4": {
     "id": 4,
-    "target": "¿Cómo estás?",
-    "native": "How are you?"
+    "target": "Adiós.",
+    "native": "Goodbye."
   },
   "5": {
     "id": 5,
-    "target": "¿Cómo estás?",
-    "native": "How are you?"
+    "target": "Por favor.",
+    "native": "Please."
   },
   "6": {
     "id": 6,
-    "target": "¿Cómo estás?",
-    "native": "How are you?"
+    "target": "Gracias.",
+    "native": "Thank you."
   },
   "7": {
     "id": 7,
-    "target": "¿Cómo estás?",
-    "native": "How are you?"
+    "target": "De nada.",
+    "native": "You're welcome."
   },
   "8": {
     "id": 8,
-    "target": "¿Cómo estás?",
-    "native": "How are you?"
+    "target": "Disculpe.",
+    "native": "Excuse me."
   },
   "9": {
     "id": 9,
-    "target": "¿Cómo estás?",
-    "native": "How are you?"
+    "target": "Lo siento.",
+    "native": "I'm sorry."
   },
   "10": {
     "id": 10,
+    "target": "Con permiso.",
+    "native": "Excuse me (to pass)."
+  },
+  "11": {
+    "id": 11,
+    "target": "Una persona.",
+    "native": "A person."
+  },
+  "12": {
+    "id": 12,
+    "target": "El hombre.",
+    "native": "The man."
+  },
+  "13": {
+    "id": 13,
+    "target": "La mujer.",
+    "native": "The woman."
+  },
+  "14": {
+    "id": 14,
+    "target": "Un niño.",
+    "native": "A boy."
+  },
+  "15": {
+    "id": 15,
+    "target": "Una niña.",
+    "native": "A girl."
+  },
+  "16": {
+    "id": 16,
+    "target": "La familia.",
+    "native": "The family."
+  },
+  "17": {
+    "id": 17,
+    "target": "Un amigo.",
+    "native": "A friend (male)."
+  },
+  "18": {
+    "id": 18,
+    "target": "Una amiga.",
+    "native": "A friend (female)."
+  },
+  "19": {
+    "id": 19,
+    "target": "La madre.",
+    "native": "The mother."
+  },
+  "20": {
+    "id": 20,
+    "target": "El padre.",
+    "native": "The father."
+  },
+  "21": {
+    "id": 21,
+    "target": "Yo soy una persona.",
+    "native": "I am a person."
+  },
+  "22": {
+    "id": 22,
+    "target": "Tú eres mi amigo.",
+    "native": "You are my friend."
+  },
+  "23": {
+    "id": 23,
+    "target": "Él es el padre.",
+    "native": "He is the father."
+  },
+  "24": {
+    "id": 24,
+    "target": "Ella es la madre.",
+    "native": "She is the mother."
+  },
+  "25": {
+    "id": 25,
+    "target": "Nosotros somos familia.",
+    "native": "We are family."
+  },
+  "26": {
+    "id": 26,
+    "target": "Ellos son amigos.",
+    "native": "They are friends."
+  },
+  "27": {
+    "id": 27,
+    "target": "Es un hombre.",
+    "native": "He is a man."
+  },
+  "28": {
+    "id": 28,
+    "target": "Es una mujer.",
+    "native": "She is a woman."
+  },
+  "29": {
+    "id": 29,
+    "target": "Soy el niño.",
+    "native": "I am the boy."
+  },
+  "30": {
+    "id": 30,
+    "target": "Eres una niña.",
+    "native": "You are a girl."
+  },
+  "31": {
+    "id": 31,
+    "target": "Es una casa.",
+    "native": "It is a house."
+  },
+  "32": {
+    "id": 32,
+    "target": "Un restaurante.",
+    "native": "A restaurant."
+  },
+  "33": {
+    "id": 33,
+    "target": "Es mi trabajo.",
+    "native": "It is my job."
+  },
+  "34": {
+    "id": 34,
+    "target": "La tienda.",
+    "native": "The store."
+  },
+  "35": {
+    "id": 35,
+    "target": "Es un hotel.",
+    "native": "It is a hotel."
+  },
+  "36": {
+    "id": 36,
+    "target": "El baño.",
+    "native": "The bathroom."
+  },
+  "37": {
+    "id": 37,
+    "target": "Una mesa.",
+    "native": "A table."
+  },
+  "38": {
+    "id": 38,
+    "target": "Es una silla.",
+    "native": "It is a chair."
+  },
+  "39": {
+    "id": 39,
+    "target": "La comida.",
+    "native": "The food."
+  },
+  "40": {
+    "id": 40,
+    "target": "Es agua.",
+    "native": "It is water."
+  },
+  "41": {
+    "id": 41,
+    "target": "¿Dónde está el baño?",
+    "native": "Where is the bathroom?"
+  },
+  "42": {
+    "id": 42,
+    "target": "No entiendo.",
+    "native": "I don't understand."
+  },
+  "43": {
+    "id": 43,
+    "target": "¿Puedes repetir?",
+    "native": "Can you repeat?"
+  },
+  "44": {
+    "id": 44,
+    "target": "Necesito ayuda.",
+    "native": "I need help."
+  },
+  "45": {
+    "id": 45,
+    "target": "¿Dónde está el restaurante?",
+    "native": "Where is the restaurant?"
+  },
+  "46": {
+    "id": 46,
+    "target": "¿Cuánto cuesta?",
+    "native": "How much does it cost?"
+  },
+  "47": {
+    "id": 47,
+    "target": "Perdón.",
+    "native": "Sorry."
+  },
+  "48": {
+    "id": 48,
+    "target": "¿Hay un hotel aquí?",
+    "native": "Is there a hotel here?"
+  },
+  "49": {
+    "id": 49,
+    "target": "¿Dónde puedo encontrar comida?",
+    "native": "Where can I find food?"
+  },
+  "50": {
+    "id": 50,
+    "target": "Más despacio, por favor.",
+    "native": "Slower, please."
+  },
+  "51": {
+    "id": 51,
+    "target": "Yo estoy en casa.",
+    "native": "I am at home."
+  },
+  "52": {
+    "id": 52,
+    "target": "Tú estás en el restaurante.",
+    "native": "You are at the restaurant."
+  },
+  "53": {
+    "id": 53,
+    "target": "Él está en el trabajo.",
+    "native": "He is at work."
+  },
+  "54": {
+    "id": 54,
+    "target": "Ella está en la tienda.",
+    "native": "She is at the store."
+  },
+  "55": {
+    "id": 55,
+    "target": "Nosotros estamos en el hotel.",
+    "native": "We are at the hotel."
+  },
+  "56": {
+    "id": 56,
+    "target": "Ellos están aquí.",
+    "native": "They are here."
+  },
+  "57": {
+    "id": 57,
+    "target": "Estoy bien.",
+    "native": "I am well."
+  },
+  "58": {
+    "id": 58,
+    "target": "Estás cansado.",
+    "native": "You are tired."
+  },
+  "59": {
+    "id": 59,
+    "target": "El baño está allí.",
+    "native": "The bathroom is there."
+  },
+  "60": {
+    "id": 60,
+    "target": "La comida está en la mesa.",
+    "native": "The food is on the table."
+  },
+  "61": {
+    "id": 61,
+    "target": "¿Cómo te llamas?",
+    "native": "What is your name?"
+  },
+  "62": {
+    "id": 62,
+    "target": "Me llamo {name}.",
+    "native": "My name is {name}.",
+    "variables": [
+      "name"
+    ],
+    "fallback_target": "Me llamo Alex.",
+    "fallback_native": "My name is Alex."
+  },
+  "63": {
+    "id": 63,
+    "target": "Mucho gusto.",
+    "native": "Nice to meet you."
+  },
+  "64": {
+    "id": 64,
+    "target": "Encantado de conocerte.",
+    "native": "Pleased to meet you."
+  },
+  "65": {
+    "id": 65,
+    "target": "¿De dónde eres?",
+    "native": "Where are you from?"
+  },
+  "66": {
+    "id": 66,
+    "target": "Soy de {country}.",
+    "native": "I am from {country}.",
+    "variables": [
+      "country"
+    ],
+    "fallback_target": "Soy de Spain.",
+    "fallback_native": "I am from Spain."
+  },
+  "67": {
+    "id": 67,
+    "target": "¿Cuántos años tienes?",
+    "native": "How old are you?"
+  },
+  "68": {
+    "id": 68,
+    "target": "Tengo {age} años.",
+    "native": "I am {age} years old.",
+    "variables": [
+      "age"
+    ],
+    "fallback_target": "Tengo 25 años.",
+    "fallback_native": "I am 25 years old."
+  },
+  "69": {
+    "id": 69,
     "target": "¿Cómo estás?",
     "native": "How are you?"
+  },
+  "70": {
+    "id": 70,
+    "target": "Muy bien, gracias.",
+    "native": "Very well, thank you."
   }
 }
