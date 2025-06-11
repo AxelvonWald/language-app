@@ -1,4 +1,4 @@
-// components/lesson/AudioPlayer.jsx
+// components/lesson/AudioPlayer.jsx - UPDATED for new naming convention
 'use client';
 import { useState, useRef, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
@@ -9,7 +9,8 @@ export default function AudioPlayer({
   lessonId, 
   sectionName,
   userId = null,
-  fallbackToTTS = false 
+  fallbackToTTS = false,
+  courseCode = 'en-es'  // NEW: Course code for new naming
 }) {
   const audioRef = useRef(null);
   const progressRef = useRef(null);
@@ -23,7 +24,7 @@ export default function AudioPlayer({
   const [isLoading, setIsLoading] = useState(false);
   const [audioUrl, setAudioUrl] = useState(null);
   const [audioError, setAudioError] = useState(false);
-  const [audioSource, setAudioSource] = useState('none'); // Track which source we're using
+  const [audioSource, setAudioSource] = useState('none');
 
   // Load audio URL with proper fallback chain
   useEffect(() => {
@@ -40,7 +41,7 @@ export default function AudioPlayer({
         .select('audio_url, audio_filename, section_name')
         .eq('user_id', userId)
         .eq('lesson_id', lessonId)
-        .eq('audio_filename', audioPath) // Match the exact filename
+        .eq('audio_filename', audioPath) // Still matches old filename in DB
         .eq('status', 'completed')
         .single();
         
@@ -58,29 +59,29 @@ export default function AudioPlayer({
         } catch (fetchError) {
           console.log('⚠️ Database URL fetch failed:', fetchError.message);
         }
-      } else if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+      } else if (error && error.code !== 'PGRST116') {
         console.log('⚠️ Database query error:', error.message);
       } else {
         console.log('ℹ️ No completed TTS request found in database');
       }
       
-      // Method 2: Try constructed path (fallback)
+      // Method 2: Try NEW naming convention for personalized files
       const paddedLessonId = lessonId.toString().padStart(3, '0');
-      const constructedPath = `personalized/${userId}/lesson-${paddedLessonId}-${audioPath}`;
-      console.log('🔍 Trying constructed path:', constructedPath);
+      const newPersonalizedPath = `personalized/${userId}/lesson-${paddedLessonId}-${audioPath}`;
+      console.log('🔍 Trying new personalized path:', newPersonalizedPath);
       
-      const { data } = supabase.storage.from('audio').getPublicUrl(constructedPath);
+      const { data } = supabase.storage.from('audio').getPublicUrl(newPersonalizedPath);
       
       try {
         const response = await fetch(data.publicUrl, { method: 'HEAD' });
         if (response.ok) {
-          console.log('✅ Found personalized audio at constructed path:', data.publicUrl);
-          return { url: data.publicUrl, source: 'constructed' };
+          console.log('✅ Found personalized audio at new path:', data.publicUrl);
+          return { url: data.publicUrl, source: 'new-personalized' };
         } else {
-          console.log('⚠️ Constructed path not accessible:', response.status);
+          console.log('⚠️ New personalized path not accessible:', response.status);
         }
       } catch (fetchError) {
-        console.log('⚠️ Constructed path fetch failed:', fetchError.message);
+        console.log('⚠️ New personalized path fetch failed:', fetchError.message);
       }
       
       console.log('❌ No personalized audio found');
@@ -111,30 +112,61 @@ export default function AudioPlayer({
         }
       }
 
-      // Step 2: Check for static audio in Supabase Storage
+      // Step 2: Try NEW naming convention for static audio
       const paddedLessonId = lessonId.toString().padStart(3, '0');
-      const staticPath = `static/en-es/lesson-${paddedLessonId}/${audioPath}`;
-      console.log('🔍 Checking static path:', staticPath);
       
-      const { data: staticData } = supabase.storage.from('audio').getPublicUrl(staticPath);
+      // Convert old filename to new format
+      // sentence-1.mp3 → en-es-lesson001-1.mp3
+      // sentence-2.mp3 → en-es-lesson001-2.mp3
+      let newAudioPath = audioPath;
+      if (audioPath.startsWith('sentence-')) {
+        const trackNumber = audioPath.replace('sentence-', '').replace('.mp3', '');
+        newAudioPath = `${courseCode}-lesson${paddedLessonId}-${trackNumber}.mp3`;
+      }
+      
+      const newStaticPath = `static/${courseCode}/lesson${paddedLessonId}/${newAudioPath}`;
+      console.log('🔍 Checking NEW static path:', newStaticPath);
+      
+      const { data: newStaticData } = supabase.storage.from('audio').getPublicUrl(newStaticPath);
 
       try {
-        const staticResponse = await fetch(staticData.publicUrl, { method: 'HEAD' });
-        if (staticResponse.ok) {
-          setAudioUrl(staticData.publicUrl);
-          setAudioSource('static-supabase');
+        const newStaticResponse = await fetch(newStaticData.publicUrl, { method: 'HEAD' });
+        if (newStaticResponse.ok) {
+          setAudioUrl(newStaticData.publicUrl);
+          setAudioSource('static-new');
           setIsLoading(false);
-          console.log('✅ Using static Supabase audio:', staticData.publicUrl);
+          console.log('✅ Using NEW static audio:', newStaticData.publicUrl);
           return;
         } else {
-          console.log('⚠️ Static Supabase audio not found:', staticResponse.status);
+          console.log('⚠️ NEW static audio not found:', newStaticResponse.status);
         }
       } catch (fetchError) {
-        console.log('⚠️ Static Supabase fetch failed:', fetchError.message);
+        console.log('⚠️ NEW static fetch failed:', fetchError.message);
       }
 
-      // Step 3: Fallback to local files (development only)
-      const localPath = `/audio/en-es/lesson-${paddedLessonId}/${audioPath}`;
+      // Step 3: Fallback to OLD naming convention for static audio
+      const oldStaticPath = `static/${courseCode}/lesson${paddedLessonId}/${audioPath}`;
+      console.log('🔍 Checking OLD static path:', oldStaticPath);
+      
+      const { data: oldStaticData } = supabase.storage.from('audio').getPublicUrl(oldStaticPath);
+
+      try {
+        const oldStaticResponse = await fetch(oldStaticData.publicUrl, { method: 'HEAD' });
+        if (oldStaticResponse.ok) {
+          setAudioUrl(oldStaticData.publicUrl);
+          setAudioSource('static-old');
+          setIsLoading(false);
+          console.log('✅ Using OLD static audio:', oldStaticData.publicUrl);
+          return;
+        } else {
+          console.log('⚠️ OLD static audio not found:', oldStaticResponse.status);
+        }
+      } catch (fetchError) {
+        console.log('⚠️ OLD static fetch failed:', fetchError.message);
+      }
+
+      // Step 4: Fallback to local files (development only)
+      const localPath = `/audio/${courseCode}/lesson-${paddedLessonId}/${audioPath}`;
       console.log('🔍 Checking local path:', localPath);
       
       try {
@@ -152,7 +184,7 @@ export default function AudioPlayer({
         console.log('⚠️ Local audio fetch failed:', fetchError.message);
       }
 
-      // Step 4: Web Speech API fallback (if enabled)
+      // Step 5: Web Speech API fallback (if enabled)
       if (fallbackToTTS) {
         setAudioUrl(null); // Will trigger TTS
         setAudioSource('tts-fallback');
@@ -367,8 +399,9 @@ export default function AudioPlayer({
   const getSourceDisplay = () => {
     switch (audioSource) {
       case 'personalized-database': return '🎙️ Personalized (DB)';
-      case 'personalized-constructed': return '🎙️ Personalized (Path)';
-      case 'static-supabase': return '📁 Static (Supabase)';
+      case 'personalized-new-personalized': return '🎙️ Personalized (New)';
+      case 'static-new': return '📁 Static (New Format)';
+      case 'static-old': return '📁 Static (Old Format)';
       case 'local': return '💻 Local (Dev)';
       case 'tts-fallback': return '🤖 TTS Fallback';
       case 'error': return '❌ Error';
