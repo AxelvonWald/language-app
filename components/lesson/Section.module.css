@@ -73,22 +73,76 @@
   font-weight: 500;
 }
 
+.downloadSection {
+    margin: 20px 0;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+  }
+
+  .downloadTitle {
+    margin-bottom: 15px;
+    color: #333;
+  }
+
+  .downloadLinks {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .downloadItem {
+    flex: 1;
+    min-width: 250px;
+    padding: 15px;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+  }
+
+  .downloadLabel {
+    margin: 0 0 8px 0;
+    color: #2563eb;
+    font-size: 16px;
+  }
+
+  .downloadDescription {
+    margin: 0 0 12px 0;
+    color: #666;
+    font-size: 14px;
+  }
+
+  .downloadButton {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+
+  .downloadButton:hover {
+    background: #1d4ed8;
+  }
+
+
 /* Mobile responsiveness */
 @media (max-width: 768px) {
   .section {
     padding: 1.5rem;
     margin-bottom: 1.5rem;
   }
-  
+
   .sectionTitle {
     font-size: 1.25rem;
   }
-  
+
   .sectionInstruction {
     font-size: 0.9rem;
     padding: 0.75rem;
   }
-  
+
   .audioSection {
     padding: 0.75rem;
   }
@@ -102,11 +156,11 @@
   .section {
     padding: 1rem;
   }
-  
+
   .sectionTitle {
     font-size: 1.1rem;
   }
-  
+
   .sectionInstruction {
     font-size: 0.85rem;
     padding: 0.5rem;
@@ -124,4 +178,5 @@
   .checkboxText {
     font-size: 0.85rem;
   }
+  
 }
