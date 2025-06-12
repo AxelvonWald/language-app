@@ -1,151 +1,152 @@
 // app/account/AccountClient.jsx
-'use client'
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
-import styles from './Account.module.css'
+"use client";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
+import styles from "./Account.module.css";
 
 export default function AccountClient() {
-  const router = useRouter()
-  const [user, setUser] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [message, setMessage] = useState('')
-  const [error, setError] = useState('')
-  
+  const router = useRouter();
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+
   // Form states
-  const [newEmail, setNewEmail] = useState('')
-  const [newPassword, setNewPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [resetEmail, setResetEmail] = useState('')
-  
+  const [newEmail, setNewEmail] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [resetEmail, setResetEmail] = useState("");
+
   // Loading states
-  const [emailLoading, setEmailLoading] = useState(false)
-  const [passwordLoading, setPasswordLoading] = useState(false)
-  const [resetLoading, setResetLoading] = useState(false)
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [passwordLoading, setPasswordLoading] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
 
   useEffect(() => {
-    getUser()
-  }, [])
+    getUser();
+  }, []);
 
   const getUser = async () => {
     try {
-      const { data: { user }, error } = await supabase.auth.getUser()
-      if (error) throw error
-      
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.getUser();
+      if (error) throw error;
+
       if (!user) {
-        router.push('/login')
-        return
+        router.push("/login");
+        return;
       }
-      
-      setUser(user)
-      setNewEmail(user.email || '')
-      setResetEmail(user.email || '')
+
+      setUser(user);
+      setNewEmail(user.email || "");
+      setResetEmail(user.email || "");
     } catch (error) {
-      console.error('Error getting user:', error)
-      setError('Failed to load user data')
+      console.error("Error getting user:", error);
+      setError("Failed to load user data");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleEmailChange = async (e) => {
-    e.preventDefault()
-    if (!newEmail || newEmail === user?.email) return
-    
-    setEmailLoading(true)
-    setMessage('')
-    setError('')
-    
+    e.preventDefault();
+    if (!newEmail || newEmail === user?.email) return;
+
+    setEmailLoading(true);
+    setMessage("");
+    setError("");
+
     try {
       const { error } = await supabase.auth.updateUser({
-        email: newEmail
-      })
-      
-      if (error) throw error
-      
-      setMessage('Confirmation email sent to your new address. Please check your inbox and click the confirmation link.')
+        email: newEmail,
+      });
+
+      if (error) throw error;
+
+      setMessage(
+        "Confirmation email sent to your new address. Please check your inbox and click the confirmation link."
+      );
     } catch (error) {
-      setError(error.message)
+      setError(error.message);
     } finally {
-      setEmailLoading(false)
+      setEmailLoading(false);
     }
-  }
+  };
 
   const handlePasswordChange = async (e) => {
-    e.preventDefault()
-    
+    e.preventDefault();
+
     if (newPassword !== confirmPassword) {
-      setError('Passwords do not match')
-      return
+      setError("Passwords do not match");
+      return;
     }
-    
+
     if (newPassword.length < 6) {
-      setError('Password must be at least 6 characters')
-      return
+      setError("Password must be at least 6 characters");
+      return;
     }
-    
-    setPasswordLoading(true)
-    setMessage('')
-    setError('')
-    
+
+    setPasswordLoading(true);
+    setMessage("");
+    setError("");
+
     try {
       const { error } = await supabase.auth.updateUser({
-        password: newPassword
-      })
-      
-      if (error) throw error
-      
-      setMessage('Password updated successfully!')
-      setNewPassword('')
-      setConfirmPassword('')
+        password: newPassword,
+      });
+
+      if (error) throw error;
+
+      setMessage("Password updated successfully!");
+      setNewPassword("");
+      setConfirmPassword("");
     } catch (error) {
-      setError(error.message)
+      setError(error.message);
     } finally {
-      setPasswordLoading(false)
+      setPasswordLoading(false);
     }
-  }
+  };
 
   const handlePasswordReset = async (e) => {
-    e.preventDefault()
-    if (!resetEmail) return
-    
-    setResetLoading(true)
-    setMessage('')
-    setError('')
-    
+    e.preventDefault();
+    if (!resetEmail) return;
+
+    setResetLoading(true);
+    setMessage("");
+    setError("");
+
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-        redirectTo: `${window.location.origin}/reset-password`
-      })
-      
-      if (error) throw error
-      
-      setMessage('Password reset email sent! Please check your inbox.')
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) throw error;
+
+      setMessage("Password reset email sent! Please check your inbox.");
     } catch (error) {
-      setError(error.message)
+      setError(error.message);
     } finally {
-      setResetLoading(false)
+      setResetLoading(false);
     }
-  }
+  };
 
   const handleSignOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut()
-      if (error) throw error
-      router.push('/login')
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      router.push("/login");
     } catch (error) {
-      setError('Error signing out')
+      setError("Error signing out");
     }
-  }
+  };
 
   if (loading) {
-    return (
-      <div className={styles.accountContainer}>
-        <div className={styles.loading}>Loading...</div>
-      </div>
-    )
+    return null;
   }
-
+  
   return (
     <div className={styles.accountContainer}>
       <div className={styles.accountHeader}>
@@ -154,25 +155,27 @@ export default function AccountClient() {
       </div>
 
       {/* Messages */}
-      {message && (
-        <div className={styles.successMessage}>
-          {message}
-        </div>
-      )}
-      
-      {error && (
-        <div className={styles.errorMessage}>
-          {error}
-        </div>
-      )}
+      {message && <div className={styles.successMessage}>{message}</div>}
+
+      {error && <div className={styles.errorMessage}>{error}</div>}
 
       {/* Current User Info */}
       <div className={styles.section}>
         <h2>Current Account</h2>
         <div className={styles.userInfo}>
-          <p><strong>Email:</strong> {user?.email}</p>
-          <p><strong>Account Created:</strong> {new Date(user?.created_at).toLocaleDateString()}</p>
-          <p><strong>Last Sign In:</strong> {user?.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString() : 'Never'}</p>
+          <p>
+            <strong>Email:</strong> {user?.email}
+          </p>
+          <p>
+            <strong>Account Created:</strong>{" "}
+            {new Date(user?.created_at).toLocaleDateString()}
+          </p>
+          <p>
+            <strong>Last Sign In:</strong>{" "}
+            {user?.last_sign_in_at
+              ? new Date(user.last_sign_in_at).toLocaleDateString()
+              : "Never"}
+          </p>
         </div>
       </div>
 
@@ -191,12 +194,12 @@ export default function AccountClient() {
               required
             />
           </div>
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             disabled={emailLoading || !newEmail || newEmail === user?.email}
             className={styles.button}
           >
-            {emailLoading ? 'Sending...' : 'Update Email'}
+            {emailLoading ? "Sending..." : "Update Email"}
           </button>
           <p className={styles.helpText}>
             You'll receive a confirmation email at your new address.
@@ -232,12 +235,12 @@ export default function AccountClient() {
               required
             />
           </div>
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             disabled={passwordLoading || !newPassword || !confirmPassword}
             className={styles.button}
           >
-            {passwordLoading ? 'Updating...' : 'Update Password'}
+            {passwordLoading ? "Updating..." : "Update Password"}
           </button>
         </form>
       </div>
@@ -260,12 +263,12 @@ export default function AccountClient() {
               required
             />
           </div>
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             disabled={resetLoading || !resetEmail}
             className={`${styles.button} ${styles.secondaryButton}`}
           >
-            {resetLoading ? 'Sending...' : 'Send Reset Email'}
+            {resetLoading ? "Sending..." : "Send Reset Email"}
           </button>
         </form>
       </div>
@@ -276,7 +279,7 @@ export default function AccountClient() {
         <p className={styles.sectionDescription}>
           Sign out of your account on this device.
         </p>
-        <button 
+        <button
           onClick={handleSignOut}
           className={`${styles.button} ${styles.dangerButton}`}
         >
@@ -284,5 +287,5 @@ export default function AccountClient() {
         </button>
       </div>
     </div>
-  )
+  );
 }

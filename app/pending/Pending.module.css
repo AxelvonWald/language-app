@@ -1,0 +1,156 @@
+/* app/pending/Pending.module.css */
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 2rem;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-primary);
+}
+
+.pendingCard {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  padding: 2.5rem;
+  text-align: center;
+  width: 100%;
+  transition: all 0.15s ease;
+}
+
+.pendingCard:hover {
+  border-color: var(--border-secondary);
+}
+
+.icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.title {
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.description {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+}
+
+.statusCard {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 2rem;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+}
+
+.statusCard.approved {
+  background: rgba(15, 123, 15, 0.1);
+  border-color: var(--success);
+  color: var(--success);
+}
+
+.approvedMessage {
+  margin-top: 0.5rem;
+  color: var(--success);
+  font-weight: 500;
+}
+
+.helpText {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  margin-bottom: 2rem;
+  line-height: 1.5;
+}
+
+.checkButton {
+  background: var(--primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-secondary);
+  border-radius: 4px;
+  padding: 0.75rem 1.5rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+.checkButton:hover:not(:disabled) {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+}
+
+.checkButton.checking {
+  background: var(--bg-tertiary);
+  color: var(--text-muted);
+  cursor: not-allowed;
+  transform: none;
+}
+
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 50vh;
+  gap: 1rem;
+  color: var(--text-secondary);
+}
+
+.loadingSpinner {
+  width: 32px;
+  height: 32px;
+  border: 2px solid var(--border-primary);
+  border-top: 2px solid var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+  
+  .pendingCard {
+    padding: 2rem;
+  }
+  
+  .title {
+    font-size: 1.25rem;
+  }
+  
+  .icon {
+    font-size: 2.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .pendingCard {
+    padding: 1.5rem;
+  }
+  
+  .title {
+    font-size: 1.125rem;
+  }
+}

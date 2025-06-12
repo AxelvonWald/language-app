@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
 import AccountClient from './AccountClient'
+import styles from './AccountPage.module.css'
 
 export default function AccountPage() {
   const [userData, setUserData] = useState(null)
@@ -15,7 +16,6 @@ export default function AccountPage() {
       try {
         // Check if user is authenticated
         const { data: { session } } = await supabase.auth.getSession()
-        
         if (!session) {
           router.push('/login')
           return
@@ -43,7 +43,7 @@ export default function AccountPage() {
           .order('lesson_id')
 
         // Calculate current lesson
-        const highestCompleted = progress && progress.length > 0 
+        const highestCompleted = progress && progress.length > 0
           ? Math.max(...progress.map(p => p.lesson_id))
           : 0
         const currentLesson = Math.min(highestCompleted + 1, 32)
@@ -69,35 +69,11 @@ export default function AccountPage() {
 
   if (loading) {
     return (
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
-        color: '#f1f5f9'
-      }}>
-        <div style={{
-          width: '40px',
-          height: '40px',
-          border: '3px solid #334155',
-          borderTop: '3px solid #3b82f6',
-          borderRadius: '50%',
-          animation: 'spin 1s linear infinite',
-          marginBottom: '1rem'
-        }}></div>
-        <p style={{ 
-          fontSize: '1.1rem',
-          color: '#cbd5e1'
-        }}>
+      <div className={styles.loadingContainer}>
+        <div className={styles.loadingSpinner}></div>
+        <p className={styles.loadingText}>
           Loading your account...
         </p>
-        <style jsx>{`
-          @keyframes spin {
-            to { transform: rotate(360deg); }
-          }
-        `}</style>
       </div>
     )
   }

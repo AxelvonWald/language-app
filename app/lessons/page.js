@@ -15,19 +15,19 @@ export default function LessonsOverview() {
   const [loadingData, setLoadingData] = useState(true);
   const [currentLesson, setCurrentLesson] = useState(1);
   const [expandedSections, setExpandedSections] = useState({
-    0: true // Expand first section by default
+    0: true, // Expand first section by default
   });
 
   // Sequential lesson groups (8 groups of 5 lessons each)
   const lessonGroups = [
-    { title: "Foundation", subtitle: "Getting Started", lessons: [1, 2, 3, 4, 5] },
-    { title: "Building Blocks", subtitle: "Core Concepts", lessons: [6, 7, 8, 9, 10] },
-    { title: "Expanding Vocabulary", subtitle: "New Words & Phrases", lessons: [11, 12, 13, 14, 15] },
-    { title: "Growing Confidence", subtitle: "Practice & Application", lessons: [16, 17, 18, 19, 20] },
-    { title: "Developing Skills", subtitle: "Intermediate Level", lessons: [21, 22, 23, 24, 25] },
-    { title: "Advanced Practice", subtitle: "Complex Structures", lessons: [26, 27, 28, 29, 30] },
-    { title: "Mastering Concepts", subtitle: "Fluency Building", lessons: [31, 32, 33, 34, 35] },
-    { title: "Course Completion", subtitle: "Final Mastery", lessons: [36, 37, 38, 39, 40] }
+    { title: "Foundation", lessons: [1, 2, 3, 4, 5] },
+    { title: "Building Blocks", lessons: [6, 7, 8, 9, 10] },
+    { title: "Expanding Vocabulary", lessons: [11, 12, 13, 14, 15] },
+    { title: "Growing Confidence", lessons: [16, 17, 18, 19, 20] },
+    { title: "Developing Skills", lessons: [21, 22, 23, 24, 25] },
+    { title: "Advanced Practice", lessons: [26, 27, 28, 29, 30] },
+    { title: "Mastering Concepts", lessons: [31, 32, 33, 34, 35] },
+    { title: "Course Completion", lessons: [36, 37, 38, 39, 40] },
   ];
 
   useEffect(() => {
@@ -36,31 +36,33 @@ export default function LessonsOverview() {
 
       try {
         // Load course flow
-        const courseFlowModule = await import('../../data/courses/en-es/course-flow.json');
+        const courseFlowModule = await import(
+          "../../data/courses/en-es/course-flow.json"
+        );
         setCourseFlow(courseFlowModule.default);
 
         // Get user's progress from Supabase
-        const { supabase } = await import('../../lib/supabase');
+        const { supabase } = await import("../../lib/supabase");
         const { data: progress, error } = await supabase
-          .from('user_progress')
-          .select('lesson_id, completed_at, status')
-          .eq('user_id', user.id)
-          .eq('course_id', 'en-es')
-          .order('lesson_id', { ascending: true });
+          .from("user_progress")
+          .select("lesson_id, completed_at, status")
+          .eq("user_id", user.id)
+          .eq("course_id", "en-es")
+          .order("lesson_id", { ascending: true });
 
         if (error) {
-          console.error('Error loading progress:', error);
+          console.error("Error loading progress:", error);
         } else {
           setUserProgress(progress || []);
-          
+
           // Calculate current lesson (highest completed + 1)
           if (progress && progress.length > 0) {
-            const lastCompleted = Math.max(...progress.map(p => p.lesson_id));
+            const lastCompleted = Math.max(...progress.map((p) => p.lesson_id));
             setCurrentLesson(Math.min(lastCompleted + 1, 40));
           }
         }
       } catch (error) {
-        console.error('Error loading lesson data:', error);
+        console.error("Error loading lesson data:", error);
       } finally {
         setLoadingData(false);
       }
@@ -69,21 +71,21 @@ export default function LessonsOverview() {
     if (!loading && user && isApproved()) {
       loadData();
     } else if (!loading && !user) {
-      router.push('/login');
+      router.push("/login");
     } else if (!loading && user && !isApproved()) {
-      router.push('/pending');
+      router.push("/pending");
     }
   }, [user, loading, isApproved, router]);
 
   const toggleSection = (sectionIndex) => {
-    setExpandedSections(prev => ({
+    setExpandedSections((prev) => ({
       ...prev,
-      [sectionIndex]: !prev[sectionIndex]
+      [sectionIndex]: !prev[sectionIndex],
     }));
   };
 
   const getLessonStatus = (lessonId) => {
-    const isCompleted = userProgress.some(p => p.lesson_id === lessonId);
+    const isCompleted = userProgress.some((p) => p.lesson_id === lessonId);
     const isCurrent = lessonId === currentLesson;
     const isLocked = lessonId > currentLesson;
 
@@ -94,7 +96,7 @@ export default function LessonsOverview() {
     // You could load this from your lesson files, but for now using placeholder
     const titles = {
       1: "Greetings & Basic Politeness",
-      2: "Basic Nouns - People & Family", 
+      2: "Basic Nouns - People & Family",
       3: "Ser Foundation",
       4: "Basic Nouns - Places & Objects",
       5: "Essential Introductions",
@@ -111,9 +113,13 @@ export default function LessonsOverview() {
       <div
         key={lessonId}
         className={`${styles.lessonItem} ${
-          isCompleted ? styles.completed : 
-          isCurrent ? styles.current : 
-          isLocked ? styles.locked : styles.available
+          isCompleted
+            ? styles.completed
+            : isCurrent
+            ? styles.current
+            : isLocked
+            ? styles.locked
+            : styles.available
         }`}
       >
         {isLocked ? (
@@ -121,19 +127,22 @@ export default function LessonsOverview() {
             <div className={styles.lessonNumber}>🔒 {lessonId}</div>
             <div className={styles.lessonInfo}>
               <div className={styles.lessonTitle}>{title}</div>
-              <div className={styles.lessonStatus}>Complete previous lessons first</div>
             </div>
           </div>
         ) : (
           <Link href={`/lessons/${lessonId}`} className={styles.lessonLink}>
             <div className={styles.lessonContent}>
               <div className={styles.lessonNumber}>
-                {isCompleted ? '✅' : isCurrent ? '🎯' : '⭕'} {lessonId}
+                {isCompleted ? "✅" : isCurrent ? "🎯" : "⭕"} {lessonId}
               </div>
               <div className={styles.lessonInfo}>
                 <div className={styles.lessonTitle}>{title}</div>
                 <div className={styles.lessonStatus}>
-                  {isCompleted ? 'Completed' : isCurrent ? 'Ready to start' : 'Available'}
+                  {isCompleted
+                    ? "Completed"
+                    : isCurrent
+                    ? "Ready to start"
+                    : "Available"}
                 </div>
               </div>
             </div>
@@ -145,8 +154,8 @@ export default function LessonsOverview() {
 
   const renderSection = (group, index) => {
     const isExpanded = expandedSections[index];
-    const completedCount = group.lessons.filter(lessonId => 
-      getLessonStatus(lessonId).isCompleted
+    const completedCount = group.lessons.filter(
+      (lessonId) => getLessonStatus(lessonId).isCompleted
     ).length;
 
     return (
@@ -157,21 +166,20 @@ export default function LessonsOverview() {
         >
           <div className={styles.sectionInfo}>
             <h3 className={styles.sectionTitle}>
-              📚 Lessons {group.lessons[0]}-{group.lessons[group.lessons.length - 1]}: {group.title}
+              Lessons {group.lessons[0]}-
+              {group.lessons[group.lessons.length - 1]}: {group.title}
             </h3>
             <p className={styles.sectionSubtitle}>{group.subtitle}</p>
             <div className={styles.sectionProgress}>
               {completedCount}/{group.lessons.length} completed
             </div>
           </div>
-          <div className={styles.expandIcon}>
-            {isExpanded ? '▼' : '▶'}
-          </div>
+          <div className={styles.expandIcon}>{isExpanded ? "▼" : "▶"}</div>
         </button>
-        
+
         {isExpanded && (
           <div className={styles.sectionContent}>
-            {group.lessons.map(lessonId => renderLesson(lessonId))}
+            {group.lessons.map((lessonId) => renderLesson(lessonId))}
           </div>
         )}
       </div>
@@ -204,7 +212,7 @@ export default function LessonsOverview() {
         <p className={styles.subtitle}>
           Track your progress through our 40-lesson A1 Spanish course
         </p>
-        
+
         <div className={styles.statsCard}>
           <div className={styles.progressStats}>
             <div className={styles.stat}>
@@ -220,10 +228,10 @@ export default function LessonsOverview() {
               <div className={styles.statLabel}>Progress</div>
             </div>
           </div>
-          
+
           <div className={styles.progressBar}>
-            <div 
-              className={styles.progressFill} 
+            <div
+              className={styles.progressFill}
               style={{ width: `${progressPercentage}%` }}
             ></div>
           </div>
@@ -231,8 +239,11 @@ export default function LessonsOverview() {
 
         {currentLesson <= 40 && (
           <div className={styles.continueSection}>
-            <Link href={`/lessons/${currentLesson}`} className={styles.continueButton}>
-              🎯 Continue Learning - Lesson {currentLesson}
+            <Link
+              href={`/lessons/${currentLesson}`}
+              className={styles.continueButton}
+            >
+              Continue Learning - Lesson {currentLesson}
             </Link>
           </div>
         )}

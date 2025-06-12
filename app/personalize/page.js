@@ -1,8 +1,8 @@
 // app/personalize/page.js
 'use client'
-
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import styles from './PersonalizeRedirect.module.css'
 
 export default function PersonalizeRedirect() {
   const router = useRouter()
@@ -14,15 +14,9 @@ export default function PersonalizeRedirect() {
 
   // Show loading while redirecting
   return (
-    <div style={{
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      minHeight: '100vh',
-      background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
-      color: '#f1f5f9'
-    }}>
-      <p>Redirecting to personalization...</p>
+    <div className={styles.container}>
+      <div className={styles.loadingSpinner}></div>
+      <p className={styles.loadingText}>Redirecting to personalization...</p>
     </div>
   )
 }

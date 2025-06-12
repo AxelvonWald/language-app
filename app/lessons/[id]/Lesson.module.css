@@ -110,3 +110,130 @@
     transform: rotate(360deg);
   }
 }
+
+/* Add these styles to your existing Lesson.module.css */
+
+.personalizationBlocked {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.blockedIcon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.personalizationBlocked h2 {
+  color: #1e293b;
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+}
+
+.blockedMessage {
+  background: #dbeafe;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  border-left: 4px solid #3b82f6;
+}
+
+.blockedMessage p {
+  color: #1e40af;
+  margin: 0.5rem 0;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.blockedActions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.refreshButton {
+  background: var(--primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-secondary);
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+.refreshButton:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+}
+
+.backButton {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-primary);
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+.backButton:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--border-secondary);
+  transform: translateY(-1px);
+}
+
+.blockedInfo {
+  background: #f1f5f9;
+  padding: 1.5rem;
+  border-radius: 8px;
+  text-align: left;
+  border: 1px solid #cbd5e1;
+}
+
+.blockedInfo h3 {
+  color: #334155;
+  margin-bottom: 0.75rem;
+  font-size: 1.1rem;
+}
+
+.blockedInfo p {
+  color: #475569;
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .personalizationBlocked {
+    margin: 1rem;
+    padding: 1.5rem;
+  }
+  
+  .blockedActions {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .refreshButton,
+  .backButton {
+    width: 100%;
+    max-width: 200px;
+  }
+}
