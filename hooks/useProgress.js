@@ -9,6 +9,7 @@ export function useProgress() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [personalizationData, setPersonalizationData] = useState(null);
+  const [personalizationStatus, setPersonalizationStatus] = useState(null); // NEW
   const [userProgress, setUserProgress] = useState([]);
   const [userStatus, setUserStatus] = useState("pending");
 
@@ -47,6 +48,7 @@ export function useProgress() {
         await loadUserData(session.user.id);
       } else {
         setPersonalizationData(null);
+        setPersonalizationStatus(null); // NEW
         setUserProgress([]);
         setUserStatus("pending");
       }
@@ -57,7 +59,7 @@ export function useProgress() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Load user's personalization data and progress
+  // Load user's personalization data, status, and progress
   const loadUserData = async (userId) => {
     try {
       const { data: profileData, error: profileError } = await supabase
@@ -72,6 +74,9 @@ export function useProgress() {
         setPersonalizationData(profileData.profile_data);
         setUserStatus(profileData.user_status || "pending");
       }
+
+      // NEW: Load personalization processing status
+      await loadPersonalizationStatus(userId);
 
       if (profileData?.user_status === "approved") {
         const { data: progressData, error: progressError } = await supabase
@@ -89,6 +94,55 @@ export function useProgress() {
       }
     } catch (error) {
       console.error("Error in loadUserData:", error);
+    }
+  };
+
+  // NEW: Load personalization processing status from TTS requests
+  const loadPersonalizationStatus = async (userId) => {
+    try {
+      // Check TTS requests for lesson 7 (first lesson to use personalization)
+      const { data: ttsRequests, error } = await supabase
+        .from("tts_requests")
+        .select("status, created_at")
+        .eq("user_id", userId)
+        .eq("lesson_id", 7);
+
+      if (error) {
+        console.error("Error loading personalization status:", error);
+        setPersonalizationStatus("unknown");
+        return;
+      }
+
+      if (!ttsRequests || ttsRequests.length === 0) {
+        // No TTS requests = personalization not submitted yet
+        setPersonalizationStatus("not_submitted");
+        return;
+      }
+
+      // Check if all TTS requests are ready
+      const allReady = ttsRequests.every(req => req.status === "completed");
+      const anyPending = ttsRequests.some(req => req.status === "pending");
+      const anyProcessing = ttsRequests.some(req => req.status === "processing");
+
+      if (allReady) {
+        setPersonalizationStatus("ready");
+      } else if (anyProcessing) {
+        setPersonalizationStatus("processing");
+      } else if (anyPending) {
+        setPersonalizationStatus("pending");
+      } else {
+        setPersonalizationStatus("unknown");
+      }
+
+      console.log("Personalization status:", {
+        requestCount: ttsRequests.length,
+        status: allReady ? "ready" : anyProcessing ? "processing" : "pending",
+        requests: ttsRequests
+      });
+
+    } catch (error) {
+      console.error("Error in loadPersonalizationStatus:", error);
+      setPersonalizationStatus("unknown");
     }
   };
 
@@ -127,6 +181,8 @@ export function useProgress() {
       }
 
       setPersonalizationData(formData);
+      // Reset status to pending since new data was submitted
+      setPersonalizationStatus("pending");
       return true;
     } catch (error) {
       console.error("Error in savePersonalizationData:", error);
@@ -142,6 +198,47 @@ export function useProgress() {
   // Check if user is approved to access lessons
   const isApproved = () => {
     return userStatus === "approved";
+  };
+
+  // NEW: Check if personalized content is ready for lessons
+  const isPersonalizationReady = () => {
+    return personalizationStatus === "ready";
+  };
+
+  // NEW: Get personalization status info for UI
+  const getPersonalizationStatusInfo = () => {
+    switch (personalizationStatus) {
+      case "ready":
+        return {
+          canProceed: true,
+          message: null,
+          type: "success"
+        };
+      case "processing":
+        return {
+          canProceed: false,
+          message: "We're processing your personalized content. This usually takes within 24 hours.",
+          type: "info"
+        };
+      case "pending":
+        return {
+          canProceed: false,
+          message: "We're preparing your personalized content. This usually takes within 24 hours.",
+          type: "info"
+        };
+      case "not_submitted":
+        return {
+          canProceed: true,
+          message: null,
+          type: "success"
+        };
+      default:
+        return {
+          canProceed: false,
+          message: "Unable to check personalization status. Please try again later.",
+          type: "error"
+        };
+    }
   };
 
   // Get completed steps for flow navigation
@@ -209,9 +306,17 @@ export function useProgress() {
     return { type: "lesson", id: nextLessonId };
   };
 
-  // Check if user can access a specific lesson (enhanced with flow)
+  // Check if user can access a specific lesson (enhanced with personalization check)
   const canAccessLesson = (lessonId) => {
     if (!isApproved()) return false;
+
+    // NEW: Special check for lesson 7 - requires personalized content to be ready
+    if (lessonId === 7) {
+      const statusInfo = getPersonalizationStatusInfo();
+      if (!statusInfo.canProceed) {
+        return false;
+      }
+    }
 
     if (!courseFlow) {
       // Fallback to old logic if flow not loaded
@@ -299,7 +404,7 @@ export function useProgress() {
     return getStepUrl(prevStep);
   };
 
-  // Refresh user data (for approval status checks)
+  // Refresh user data (for approval status checks and personalization status)
   const refreshUserData = async () => {
     if (!user) return;
 
@@ -311,11 +416,14 @@ export function useProgress() {
     user,
     loading: loading || flowLoading,
     personalizationData,
+    personalizationStatus, // NEW
     userProgress,
     userStatus,
     savePersonalizationData,
     hasPersonalized,
     isApproved,
+    isPersonalizationReady, // NEW
+    getPersonalizationStatusInfo, // NEW
     canAccessLesson,
     canAccessPersonalization,
     isLessonCompleted,
@@ -326,5 +434,6 @@ export function useProgress() {
     getCompletedSteps,
     courseFlow,
     refreshUserData,
+    loadPersonalizationStatus, // NEW - expose for manual refresh
   };
 }

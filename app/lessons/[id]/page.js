@@ -25,6 +25,8 @@ export default function LessonPage({ params }) {
     isLessonCompleted,
     completeLesson,
     isApproved,
+    getPersonalizationStatusInfo, // NEW
+    loadPersonalizationStatus, // NEW
   } = useProgress();
 
   // DEBUG LOGS - These should ALWAYS run
@@ -39,6 +41,7 @@ export default function LessonPage({ params }) {
   const [lessonData, setLessonData] = useState(null);
   const [sentencesDB, setSentencesDB] = useState(null);
   const [loadingLesson, setLoadingLesson] = useState(true);
+  const [personalizationBlocked, setPersonalizationBlocked] = useState(false); // NEW
 
   const paddedId = params.id.padStart(3, "0");
   const lessonId = parseInt(params.id);
@@ -97,6 +100,18 @@ export default function LessonPage({ params }) {
       return;
     }
 
+    // NEW: Special handling for lesson 7 - check personalization status
+    if (lessonId === 7) {
+      const statusInfo = getPersonalizationStatusInfo();
+      console.log("Lesson 7 personalization status:", statusInfo);
+      
+      if (!statusInfo.canProceed) {
+        console.log("Lesson 7 blocked - personalization not ready");
+        setPersonalizationBlocked(true);
+        return; // Don't redirect, show the blocked state
+      }
+    }
+
     // Check if user can access this lesson
     if (!canAccessLesson(lessonId)) {
       console.log("Cannot access lesson", lessonId, "redirecting to lesson 1");
@@ -111,6 +126,9 @@ export default function LessonPage({ params }) {
       router.push("/personalize");
       return;
     }
+
+    // Clear any previous blocked state if we get here
+    setPersonalizationBlocked(false);
   }, [
     user,
     loading,
@@ -119,8 +137,21 @@ export default function LessonPage({ params }) {
     canAccessLesson,
     hasPersonalized,
     isApproved,
+    getPersonalizationStatusInfo, // NEW
     router,
   ]);
+
+  // NEW: Handle refresh button for personalization status
+  const handleRefreshStatus = async () => {
+    console.log("Refreshing personalization status...");
+    await loadPersonalizationStatus(user.id);
+    
+    // Re-check if we can proceed now
+    const statusInfo = getPersonalizationStatusInfo();
+    if (statusInfo.canProceed) {
+      setPersonalizationBlocked(false);
+    }
+  };
 
   // Dynamic audio path builder
   const getAudioPath = (fileName) => {
@@ -205,6 +236,48 @@ export default function LessonPage({ params }) {
         <div className={styles.loading}>
           <div className={styles.loadingSpinner}></div>
           <div>Loading lesson...</div>
+        </div>
+      </div>
+    );
+  }
+
+  // NEW: Personalization blocked state for lesson 7
+  if (personalizationBlocked && lessonId === 7) {
+    const statusInfo = getPersonalizationStatusInfo();
+    
+    return (
+      <div className={styles.lessonContainer}>
+        <div className={styles.personalizationBlocked}>
+          <div className={styles.blockedIcon}>⏳</div>
+          <h2>Lesson 7: Personalized Content in Progress</h2>
+          <div className={styles.blockedMessage}>
+            <p>{statusInfo.message}</p>
+            <p>We will notify you here when your personalized lesson is ready!</p>
+          </div>
+          
+          <div className={styles.blockedActions}>
+            <button 
+              onClick={handleRefreshStatus}
+              className={styles.refreshButton}
+            >
+              🔄 Check Status
+            </button>
+            <button 
+              onClick={() => router.push('/lessons')}
+              className={styles.backButton}
+            >
+              ← Back to Lessons
+            </button>
+          </div>
+          
+          <div className={styles.blockedInfo}>
+            <h3>Why the wait?</h3>
+            <p>
+              Lesson 7 uses your personal information to create custom content and audio. 
+              This gives you a much more engaging learning experience, but requires some 
+              processing time to ensure everything is perfect!
+            </p>
+          </div>
         </div>
       </div>
     );
