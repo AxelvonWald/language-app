@@ -29,10 +29,11 @@ class TTSManager:
             os.getenv('SUPABASE_SERVICE_ROLE_KEY')
         )
         
-        # Voice mappings
+        # Voice mappings - match standalone generator exactly
         self.voices = {
-            'en': 'en-GB-AdaMultilingualNeural',
-            'es': 'es-MX-JorgeNeural'
+            'en': 'en-GB-AdaMultilingualNeural',      # Ada for English (Track 1)
+            'es': 'es-ES-ArabellaMultilingualNeural', # Arabella for Spanish (Track 1)
+            'es_repeat': 'es-MX-JorgeNeural'          # Jorge for Spanish repeats (Track 2)
         }
 
     def get_pending_requests(self):
@@ -40,27 +41,37 @@ class TTSManager:
         response = self.supabase.table('tts_requests').select('*').eq('status', 'approved').execute()
         return response.data
 
-    def generate_tts_segment(self, text, language):
-        """Generate TTS for a text segment"""
+    def generate_tts_segment(self, text, language, track_type='bilingual'):
+        """Generate TTS for a text segment with track-specific voice selection"""
         try:
-            self.speech_config.speech_synthesis_voice_name = self.voices[language]
+            # Select voice based on track type (matching standalone generator)
+            if track_type == 'repetition' and language == 'es':
+                voice_name = self.voices['es_repeat']  # Jorge for repetition tracks
+            else:
+                voice_name = self.voices[language]     # Ada/Arabella for bilingual tracks
+                
+            print(f"DEBUG: Using voice '{voice_name}' for language '{language}', track '{track_type}'")
+            
+            self.speech_config.speech_synthesis_voice_name = voice_name
             synthesizer = speechsdk.SpeechSynthesizer(speech_config=self.speech_config)
             result = synthesizer.speak_text_async(text).get()
             
             if result.reason == speechsdk.ResultReason.SynthesizingAudioCompleted:
                 return result.audio_data
-            return None
+            else:
+                print(f"❌ TTS failed for '{text[:50]}...': {result.reason}")
+                return None
         except Exception as e:
-            print(f"TTS Error: {e}")
+            print(f"❌ TTS Error for '{text[:50]}...': {e}")
             return None
 
-    def parse_script_and_generate(self, script_text):
-        """Parse script and generate audio"""
+    def parse_script_and_generate(self, script_text, track_type='bilingual'):
+        """Parse script and generate audio with track type info"""
         # More precise regex pattern
         pattern = r'\[([a-z]{2}|\d+\.?\d*s)\]\s*([^[]*?)(?=\[|$)'
         segments = re.findall(pattern, script_text)
         
-        print(f"DEBUG: Parsing script: {script_text}")
+        print(f"DEBUG: Parsing script for track type '{track_type}': {script_text[:100]}...")
         print(f"DEBUG: Found {len(segments)} segments")
         
         audio_segments = []
@@ -70,9 +81,9 @@ class TTSManager:
             print(f"DEBUG: Segment {i}: tag='{tag}', content='{content}'")
             
             # CHECK LANGUAGE TAGS FIRST (before checking for 's' ending)
-            if tag in self.voices and content:  # Language tag with content
+            if tag in ['en', 'es'] and content:  # Language tag with content
                 print(f"DEBUG: Generating TTS for [{tag}]: {content}")
-                audio_data = self.generate_tts_segment(content, tag)
+                audio_data = self.generate_tts_segment(content, tag, track_type)
                 if audio_data:
                     audio_segment = AudioSegment.from_wav(io.BytesIO(audio_data))
                     audio_segments.append(audio_segment)
@@ -255,27 +266,28 @@ def generate_audio():
         filename = request.form['filename']
         script_text = request.form['script_text']
         
-        # NEW: Get lesson_id from the request
-        # First, fetch the TTS request to get lesson_id
-        response = tts_manager.supabase.table('tts_requests').select('lesson_id').eq('id', request_id).single().execute()
+        # NEW: Get track_type from the request
+        response = tts_manager.supabase.table('tts_requests').select('lesson_id, track_type').eq('id', request_id).single().execute()
         
         if not response.data:
             return jsonify({'success': False, 'error': 'TTS request not found'})
             
         lesson_id = response.data['lesson_id']
+        track_type = response.data.get('track_type', 'bilingual')  # Default to bilingual if not specified
         
         print("=" * 50)
         print(f"GENERATE AUDIO DEBUG:")
         print(f"Request ID: {request_id}")
         print(f"User ID: {user_id}")
-        print(f"Lesson ID: {lesson_id}")  # NEW
+        print(f"Lesson ID: {lesson_id}")
+        print(f"Track Type: {track_type}")  # NEW
         print(f"Filename: {filename}")
         print(f"Script length: {len(script_text)}")
         print(f"Script preview: {script_text[:100]}...")
         print("=" * 50)
         
-        # Generate audio
-        combined_audio = tts_manager.parse_script_and_generate(script_text)
+        # Generate audio with track type info
+        combined_audio = tts_manager.parse_script_and_generate(script_text, track_type)
         
         if combined_audio:
             print("✅ Audio generation successful")

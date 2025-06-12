@@ -120,7 +120,16 @@ const TRANSLATION_DICTIONARY = {
 };
 
 async function translateWithHybrid(text, fieldType = 'general') {
-  // First try predefined dictionary
+  // For names and numbers, use as-is (no translation needed)
+  if (fieldType === 'name' || fieldType === 'story_character' || fieldType === 'age') {
+    return {
+      translation: text,
+      source: 'passthrough',
+      needsReview: false
+    };
+  }
+  
+  // First try predefined dictionary (exact match)
   if (TRANSLATION_DICTIONARY[text]) {
     return {
       translation: TRANSLATION_DICTIONARY[text],
@@ -129,11 +138,11 @@ async function translateWithHybrid(text, fieldType = 'general') {
     };
   }
   
-  // For names and custom text, use as-is (no translation needed)
-  if (fieldType === 'name' || fieldType === 'story_character') {
+  // For numbers, use as-is
+  if (!isNaN(text) && !isNaN(parseFloat(text))) {
     return {
       translation: text,
-      source: 'passthrough',
+      source: 'number',
       needsReview: false
     };
   }
