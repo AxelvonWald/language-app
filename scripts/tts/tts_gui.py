@@ -8,6 +8,7 @@ import tempfile
 from pydub import AudioSegment
 import io
 from dotenv import load_dotenv
+import json
 
 # Load environment variables
 load_dotenv()
@@ -30,12 +31,12 @@ class TTSManager:
         
         # Voice mappings
         self.voices = {
-            'en': 'en-US-JennyNeural',
-            'es': 'es-ES-AlvaroNeural'
+            'en': 'en-GB-AdaMultilingualNeural',
+            'es': 'es-MX-JorgeNeural'
         }
 
     def get_pending_requests(self):
-        """Get all pending TTS requests with lesson information"""
+        """Get all approved TTS requests with lesson information"""
         response = self.supabase.table('tts_requests').select('*').eq('status', 'approved').execute()
         return response.data
 
@@ -163,24 +164,87 @@ def index():
 
 @app.route('/edit/<request_id>')
 def edit_request(request_id):
-    """Edit page for a specific TTS request"""
+    """Edit page for a specific TTS request with clean sentence array support"""
     response = tts_manager.supabase.table('tts_requests').select('*').eq('id', request_id).single().execute()
     request_data = response.data
     
     if not request_data:
         return redirect(url_for('index'))
     
-    # Parse sentences for editing
-    spanish_sentences = [s.strip() for s in request_data['personalized_text'].split('.') if s.strip()]
-    english_sentences = [s.strip() for s in request_data['native_text'].split('.') if s.strip()] if request_data['native_text'] else []
-    
-    # Combine for editing
+    # Handle both old format (concatenated strings) and new format (JSON arrays)
     sentences = []
-    for i, spanish in enumerate(spanish_sentences):
-        english = english_sentences[i] if i < len(english_sentences) else f"Sentence {i+1}"
-        sentences.append({'english': english, 'spanish': spanish})
     
-    return render_template('edit.html', request=request_data, sentences=sentences)
+    # Check if we have the new clean sentence arrays
+    if (request_data.get('clean_target_sentences') and 
+        request_data.get('clean_native_sentences')):
+        
+        print(f"DEBUG: Using NEW clean sentence format")
+        
+        # New format: JSON arrays of clean sentences
+        target_sentences = request_data['clean_target_sentences']
+        native_sentences = request_data['clean_native_sentences']
+        
+        # Ensure they're lists (in case they're stored as JSON strings)
+        if isinstance(target_sentences, str):
+            target_sentences = json.loads(target_sentences)
+        if isinstance(native_sentences, str):
+            native_sentences = json.loads(native_sentences)
+        
+        print(f"DEBUG: Found {len(target_sentences)} target sentences")
+        print(f"DEBUG: Found {len(native_sentences)} native sentences")
+        
+        # Combine for editing
+        for i, target in enumerate(target_sentences):
+            native = native_sentences[i] if i < len(native_sentences) else f"Sentence {i+1}"
+            sentences.append({
+                'english': native,
+                'spanish': target
+            })
+    
+    else:
+        print(f"DEBUG: Using OLD concatenated string format")
+        
+        # Old format: concatenated strings with repetition (fallback)
+        spanish_text = request_data.get('personalized_text', '')
+        english_text = request_data.get('native_text', '')
+        
+        # Parse and deduplicate as before
+        spanish_sentences = [s.strip() for s in spanish_text.split('.') if s.strip()]
+        english_sentences = [s.strip() for s in english_text.split('.') if s.strip()]
+        
+        # Remove duplicates while preserving order
+        unique_spanish = []
+        unique_english = []
+        
+        for sentence in spanish_sentences:
+            if sentence not in unique_spanish:
+                unique_spanish.append(sentence)
+        
+        for sentence in english_sentences:
+            if sentence not in unique_english:
+                unique_english.append(sentence)
+        
+        # Combine for editing
+        for i, spanish in enumerate(unique_spanish):
+            english = unique_english[i] if i < len(unique_english) else f"Sentence {i+1}"
+            sentences.append({
+                'english': english,
+                'spanish': spanish
+            })
+    
+    print(f"DEBUG: Final sentences for editing: {len(sentences)}")
+    
+    # Add translation info for display
+    translation_info = {
+        'flags': request_data.get('translation_flags', ''),
+        'needs_review': request_data.get('needs_review', False),
+        'track_type': request_data.get('track_type', 'unknown')
+    }
+    
+    return render_template('edit.html', 
+                         request=request_data, 
+                         sentences=sentences,
+                         translation_info=translation_info)
 
 @app.route('/generate', methods=['POST'])
 def generate_audio():
