@@ -17,6 +17,7 @@ export default function Section({
   userId
 }) {
   const [isCompleted, setIsCompleted] = useState(false)
+  const [downloadStatus, setDownloadStatus] = useState({})
 
   const handleCheckboxChange = (checked) => {
     setIsCompleted(checked)
@@ -50,18 +51,103 @@ export default function Section({
     const paddedLessonId = lessonId.toString().padStart(3, '0')
     const courseCode = 'en-es' // Could be passed as prop if needed
     
+    // Determine if user has personalized audio or should use static
+    const baseUrl = 'https://vafhwsnmkbdguxidubsz.supabase.co/storage/v1/object/public/audio'
+    
     return {
       track1: {
         filename: `${courseCode}-lesson${paddedLessonId}-1.mp3`,
-        label: 'Track 1: Mixed (English + Spanish)',
-        description: 'Listen and repeat after each Spanish sentence'
+        staticUrl: `${baseUrl}/static/${courseCode}/lesson${paddedLessonId}/${courseCode}-lesson${paddedLessonId}-1.mp3`,
+        personalizedUrl: userId ? `${baseUrl}/personalized/${userId}/lesson-${paddedLessonId}-${courseCode}-lesson${paddedLessonId}-1.mp3` : null,
+        label: 'Track 1: Bilingual Practice',
+        description: 'English → pause → Spanish (Pimsleur style)'
       },
       track2: {
-        filename: `${courseCode}-lesson${paddedLessonId}-2.mp3`, 
-        label: 'Track 2: Spanish Only (5x repeats)',
+        filename: `${courseCode}-lesson${paddedLessonId}-2.mp3`,
+        staticUrl: `${baseUrl}/static/${courseCode}/lesson${paddedLessonId}/${courseCode}-lesson${paddedLessonId}-2.mp3`,
+        personalizedUrl: userId ? `${baseUrl}/personalized/${userId}/lesson-${paddedLessonId}-${courseCode}-lesson${paddedLessonId}-2.mp3` : null,
+        label: 'Track 2: Spanish Drilling',
         description: 'Spanish sentences repeated 5 times each'
       }
     }
+  }
+
+  // Download audio file with fallback logic
+  const downloadAudio = async (trackKey) => {
+    const downloadUrls = getDownloadUrls()
+    if (!downloadUrls) return
+
+    const track = downloadUrls[trackKey]
+    setDownloadStatus(prev => ({ ...prev, [trackKey]: 'downloading' }))
+
+    try {
+      // Try personalized audio first (if user is logged in)
+      let audioUrl = track.staticUrl // Default to static
+      
+      if (track.personalizedUrl && userId) {
+        // Check if personalized audio exists
+        try {
+          const response = await fetch(track.personalizedUrl, { method: 'HEAD' })
+          if (response.ok) {
+            audioUrl = track.personalizedUrl
+            console.log(`📱 Downloading personalized audio: ${track.filename}`)
+          } else {
+            console.log(`📱 Personalized audio not found, using static: ${track.filename}`)
+          }
+        } catch (error) {
+          console.log(`📱 Error checking personalized audio, using static: ${track.filename}`)
+        }
+      }
+
+      // Create download link
+      const link = document.createElement('a')
+      link.href = audioUrl
+      link.download = track.filename
+      link.style.display = 'none'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+
+      setDownloadStatus(prev => ({ ...prev, [trackKey]: 'success' }))
+      
+      // Reset status after 2 seconds
+      setTimeout(() => {
+        setDownloadStatus(prev => ({ ...prev, [trackKey]: null }))
+      }, 2000)
+
+    } catch (error) {
+      console.error('Download error:', error)
+      setDownloadStatus(prev => ({ ...prev, [trackKey]: 'error' }))
+      
+      // Reset status after 3 seconds
+      setTimeout(() => {
+        setDownloadStatus(prev => ({ ...prev, [trackKey]: null }))
+      }, 3000)
+    }
+  }
+
+  // Render download button with status
+  const renderDownloadButton = (trackKey, track) => {
+    const status = downloadStatus[trackKey]
+    
+    return (
+      <div key={trackKey} className={styles.downloadItem}>
+        <div className={styles.downloadInfo}>
+          <h4 className={styles.downloadLabel}>{track.label}</h4>
+          <p className={styles.downloadDescription}>{track.description}</p>
+        </div>
+        <button
+          className={`${styles.downloadButton} ${status ? styles[status] : ''}`}
+          onClick={() => downloadAudio(trackKey)}
+          disabled={status === 'downloading'}
+        >
+          {status === 'downloading' && '⏳ Downloading...'}
+          {status === 'success' && '✅ Downloaded!'}
+          {status === 'error' && '❌ Error - Retry'}
+          {!status && '📱 Download MP3'}
+        </button>
+      </div>
+    )
   }
 
   return (
@@ -73,10 +159,10 @@ export default function Section({
           {getInstructionText()}
         </div>
       )}
-      
+
       {audio && (
         <div className={styles.audioSection}>
-          <AudioPlayer 
+          <AudioPlayer
             audioPath={getAudioFileName(audio)}
             lessonId={lessonId}
             sectionName={sectionName}
@@ -85,7 +171,7 @@ export default function Section({
           />
         </div>
       )}
-     
+
       {/* Show table for all sections EXCEPT restOfDay */}
       {sectionName !== 'restOfDay' && sentences && sentences.length > 0 && (
         <SentenceTable
@@ -94,7 +180,22 @@ export default function Section({
           showCheckboxes={false}
         />
       )}
-      
+
+      {/* Download section for Rest of Day */}
+      {sectionName === 'restOfDay' && (
+        <div className={styles.downloadSection}>
+          <h3 className={styles.downloadTitle}>📱 Download Today's Audio</h3>
+          <p className={styles.downloadSubtitle}>
+            Take these lessons with you for offline practice
+          </p>
+          <div className={styles.downloadList}>
+            {Object.entries(getDownloadUrls()).map(([trackKey, track]) => 
+              renderDownloadButton(trackKey, track)
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Section completion checkbox */}
       <div className={styles.sectionCheckbox}>
         <label className={styles.checkboxLabel}>
