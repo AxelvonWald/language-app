@@ -78,7 +78,7 @@ export default function PersonalizePage({ params }) {
     loadConfigs()
   }, [personalizationId, personalizationData, router])
 
-  // Check authentication and approval
+  // Check authentication, approval, and form completion status
   useEffect(() => {
     if (!loading && !loadingConfig) {
       if (!user) {
@@ -90,8 +90,67 @@ export default function PersonalizePage({ params }) {
         router.push("/pending");
         return;
       }
+      
+      // NEW: Check if user has already completed this personalization form
+      checkFormCompletionStatus();
     }
-  }, [user, loading, loadingConfig, isApproved, router]);
+  }, [user, loading, loadingConfig, isApproved, router, personalizationId]);
+
+  const checkFormCompletionStatus = async () => {
+    if (!user || !personalizationId) return;
+
+    try {
+      // Check if user has existing TTS requests for this form
+      // We determine this by checking if TTS requests exist for lessons that use this form
+      
+      // First, get which lessons this form affects
+      if (!formConfig || !formConfig.usedInLessons || formConfig.usedInLessons.length === 0) {
+        return; // No lessons to check, form is not yet active
+      }
+
+      // Check if TTS requests already exist for any of the lessons this form affects
+      const { data: existingRequests, error } = await fetch('/api/check-form-completion', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user.id,
+          formId: personalizationId,
+          lessonIds: formConfig.usedInLessons
+        })
+      }).then(res => res.json());
+
+      if (existingRequests && existingRequests.alreadyCompleted) {
+        console.log(`🔄 Form ${personalizationId} already completed, redirecting to next step`);
+        
+        // Find next step in course flow after this personalization
+        if (courseFlow) {
+          const currentStepIndex = courseFlow.flow.findIndex(
+            step => step.type === 'personalization' && step.id === personalizationId
+          );
+          
+          if (currentStepIndex !== -1 && currentStepIndex < courseFlow.flow.length - 1) {
+            const nextStep = courseFlow.flow[currentStepIndex + 1];
+            
+            if (nextStep.type === 'lesson') {
+              router.push(`/lessons/${nextStep.id}`);
+              return;
+            } else if (nextStep.type === 'personalization') {
+              router.push(`/personalize/${nextStep.id}`);
+              return;
+            }
+          }
+        }
+        
+        // Fallback: redirect to lessons
+        router.push('/lessons/1');
+      }
+    } catch (error) {
+      console.error('Error checking form completion status:', error);
+      // Continue to show form if check fails
+    }
+  };
 
   const handleInputChange = (fieldId, value) => {
     setFormData((prev) => ({
