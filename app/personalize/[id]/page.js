@@ -156,12 +156,17 @@ export default function PersonalizePage({ params }) {
           const nextStep = courseFlow.flow[currentStepIndex + 1]
           
           if (nextStep.type === 'lesson') {
+            // Scroll to top before navigation
+            window.scrollTo(0, 0)
             router.push(`/lessons/${nextStep.id}`)
           } else if (nextStep.type === 'personalization') {
+            // Scroll to top before navigation
+            window.scrollTo(0, 0)
             router.push(`/personalize/${nextStep.id}`)
           }
         } else {
           // Fallback to lessons if flow is complete
+          window.scrollTo(0, 0)
           router.push('/lessons/1')
         }
       } else {

@@ -19,7 +19,7 @@
       },
       {
         "id": "country",
-        "type": "select",
+        "type": "text",
         "label": "Where are you from?",
         "required": true,
         "options": [
