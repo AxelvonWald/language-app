@@ -3,7 +3,7 @@
     "id": "basic",
     "title": "Tell us about yourself",
     "description": "Help us personalize your Spanish learning experience with some basic information about you.",
-    "usedInLessons": [7, 10],
+    "usedInLessons": [7],
     "fields": [
       {
         "id": "name",
@@ -79,7 +79,7 @@
     "id": "preferences",
     "title": "Your likes and interests",
     "description": "Tell us about your preferences so we can make lessons more relevant to you.",
-    "usedInLessons": [24],
+    "usedInLessons": [],
     "fields": [
       {
         "id": "hobby",
@@ -155,7 +155,7 @@
     "id": "stories",
     "title": "Story preferences",
     "description": "Help us personalize the mini-stories in your course.",
-    "usedInLessons": [25, 31, 35, 39],
+    "usedInLessons": [],
     "fields": [
       {
         "id": "story_setting",
@@ -189,7 +189,7 @@
     "id": "feelings",
     "title": "Emotions and expressions",
     "description": "Tell us about yourself so we can personalize emotional expressions.",
-    "usedInLessons": [26, 27],
+    "usedInLessons": [],
     "fields": [
       {
         "id": "mood",
@@ -226,7 +226,7 @@
     "id": "goals",
     "title": "Your Spanish goals",
     "description": "Tell us about your language learning goals and future plans.",
-    "usedInLessons": [33, 38, 40],
+    "usedInLessons": [],
     "fields": [
       {
         "id": "learning_goal",

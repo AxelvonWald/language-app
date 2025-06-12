@@ -23,7 +23,7 @@ export default function PersonalizePage({ params }) {
 
   const personalizationId = params.id;
 
-// Load form configuration and course flow
+  // Load form configuration and course flow
   useEffect(() => {
     const loadConfigs = async () => {
       try {
@@ -78,48 +78,6 @@ export default function PersonalizePage({ params }) {
     loadConfigs()
   }, [personalizationId, personalizationData, router])
 
-  // Load form configuration and course flow
-  useEffect(() => {
-    const loadConfigs = async () => {
-      try {
-        const [formsModule, flowModule] = await Promise.all([
-          import("../../../data/courses/en-es/personalization-forms.json"),
-          import("../../../data/courses/en-es/course-flow.json"),
-        ]);
-
-        const forms = formsModule.default;
-        const flow = flowModule.default;
-
-        if (!forms[personalizationId]) {
-          console.error("Personalization form not found:", personalizationId);
-          router.push("/lessons/1");
-          return;
-        }
-
-        setFormConfig(forms[personalizationId]);
-        setCourseFlow(flow);
-
-        // Initialize form data with existing values
-        if (personalizationData) {
-          const initialData = {};
-          forms[personalizationId].fields.forEach((field) => {
-            if (personalizationData[field.id] !== undefined) {
-              initialData[field.id] = personalizationData[field.id];
-            }
-          });
-          setFormData(initialData);
-        }
-      } catch (error) {
-        console.error("Error loading form config:", error);
-        router.push("/lessons/1");
-      } finally {
-        setLoadingConfig(false);
-      }
-    };
-
-    loadConfigs();
-  }, [personalizationId, personalizationData, router]);
-
   // Check authentication and approval
   useEffect(() => {
     if (!loading && !loadingConfig) {
@@ -142,7 +100,7 @@ export default function PersonalizePage({ params }) {
     }));
   };
 
-const handleSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     
     if (!user || !formConfig || !courseFlow) return
@@ -156,6 +114,12 @@ const handleSubmit = async (e) => {
         ...formData
       }
       
+      console.log('📤 Sending to API:', {
+        userId: user.id,
+        profileData: updatedData,
+        formId: personalizationId
+      });
+      
       // Call the enhanced API that creates TTS requests and sends notifications
       const response = await fetch('/api/personalize', {
         method: 'POST',
@@ -165,11 +129,13 @@ const handleSubmit = async (e) => {
         body: JSON.stringify({
           userId: user.id,
           profileData: updatedData,
-          formId: personalizationId  // ADD THIS LINE - pass the form ID
+          formId: personalizationId
         })
       })
       
+      console.log('📥 API Response status:', response.status);
       const result = await response.json()
+      console.log('📥 API Response body:', result);
       
       if (response.ok && result.success) {
         // No need to call savePersonalizationData again - the API already saved it
@@ -177,6 +143,8 @@ const handleSubmit = async (e) => {
         // Show success message if TTS requests were created
         if (result.ttsRequestsCreated > 0) {
           alert(`Success! ${result.ttsRequestsCreated} personalized audio requests created. You'll receive these after admin approval.`)
+        } else {
+          alert('Personalization saved successfully!')
         }
         
         // Find next step in course flow
@@ -198,11 +166,11 @@ const handleSubmit = async (e) => {
         }
       } else {
         console.error('API Error:', result)
-        alert('Error saving your information. Please try again.')
+        alert(`Error saving your information: ${result.error || 'Unknown error'}`)
       }
     } catch (error) {
       console.error('Save error:', error)
-      alert('Error saving your information. Please try again.')
+      alert('Network error. Please try again.')
     } finally {
       setSaving(false)
     }
