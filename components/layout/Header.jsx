@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTheme } from "@/contexts/ThemeContext";
 import { supabase } from "../../lib/supabase";
 import styles from "./Header.module.css";
 
@@ -10,6 +11,7 @@ export default function Header() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     // Get initial session
@@ -58,8 +60,6 @@ export default function Header() {
     );
   }
 
-  const notificationInfo = null; // Removed notification
-
   return (
     <header className={styles.header}>
       <div className={styles.container}>
@@ -84,14 +84,30 @@ export default function Header() {
               <Link href="/account" className={styles.navLink}>
                 Account
               </Link>
+              <button 
+                onClick={toggleTheme}
+                className={styles.themeToggle}
+                title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
+              >
+                {theme === 'dark' ? '◐' : '◑'}
+              </button>
               <button onClick={handleLogout} className={styles.logoutButton}>
                 Logout
               </button>
             </>
           ) : (
-            <Link href="/login" className={styles.navLink}>
-              Login
-            </Link>
+            <>
+              <button 
+                onClick={toggleTheme}
+                className={styles.themeToggle}
+                title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
+              >
+                {theme === 'dark' ? '◐' : '◑'}
+              </button>
+              <Link href="/login" className={styles.navLink}>
+                Login
+              </Link>
+            </>
           )}
         </nav>
       </div>

@@ -10,8 +10,8 @@ body {
   max-width: 100vw;
   overflow-x: hidden;
   font-family: var(--font-geist-sans);
-  background-color: #191919;
-  color: #E6E6E6;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
 }
 
 body {
@@ -24,7 +24,7 @@ a {
   text-decoration: none;
 }
 
-/* NOTION-INSPIRED DARK THEME VARIABLES */
+/* DARK THEME (default) */
 :root {
   --foreground-rgb: 230, 230, 230;
   --background-start-rgb: 25, 25, 25;
@@ -60,7 +60,43 @@ a {
   --warning-hover: #E08C07;
 }
 
-/* Form elements styling - Notion style */
+/* LIGHT THEME */
+:root[data-theme="light"] {
+  --foreground-rgb: 55, 65, 81;
+  --background-start-rgb: 255, 255, 255;
+  --background-end-rgb: 255, 255, 255;
+  
+  /* Primary colors - professional light theme */
+  --primary: #374151;        /* Dark gray for buttons */
+  --primary-hover: #1F2937;  /* Darker on hover */
+  --primary-light: #6B7280;  /* Lighter gray */
+  
+  /* Background colors - clean light theme */
+  --bg-primary: #FFFFFF;     /* Pure white background */
+  --bg-secondary: #F9FAFB;   /* Very light gray for cards */
+  --bg-tertiary: #F3F4F6;    /* Light gray for inputs/hover */
+  
+  /* Text colors - proper contrast for light theme */
+  --text-primary: #111827;   /* Nearly black text */
+  --text-secondary: #6B7280; /* Medium gray */
+  --text-muted: #9CA3AF;     /* Light gray for muted text */
+  
+  /* Border colors - subtle light theme borders */
+  --border-primary: #E5E7EB; /* Light gray borders */
+  --border-secondary: #D1D5DB; /* Slightly darker borders */
+  
+  /* Success/Error colors - same as dark but may adjust */
+  --success: #059669;
+  --success-hover: #047857;
+  --error: #DC2626;
+  --error-hover: #B91C1C;
+  
+  /* Warning colors */
+  --warning: #D97706;
+  --warning-hover: #B45309;
+}
+
+/* Form elements styling - works with both themes */
 input, textarea, select {
   background-color: var(--bg-tertiary);
   border: 1px solid var(--border-primary);
