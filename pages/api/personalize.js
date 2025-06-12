@@ -386,9 +386,12 @@ async function generateCleanTTSRequests(userId, profileData, formId) {
           section_name: req.section_name,
           audio_filename: req.audio_filename,
           track_type: req.track_type,
-          // Store as JSON arrays instead of concatenated strings
+          // NEW: Store as JSON arrays
           clean_target_sentences: req.clean_target_sentences,
           clean_native_sentences: req.clean_native_sentences,
+          // OLD: Also fill legacy columns for backward compatibility
+          personalized_text: req.clean_target_sentences.join('. '),
+          native_text: req.clean_native_sentences.join('. '),
           sentence_count: req.sentence_count,
           translation_flags: req.translation_flags,
           status: req.needs_review ? 'pending' : 'approved', // Auto-approve if no custom translations
