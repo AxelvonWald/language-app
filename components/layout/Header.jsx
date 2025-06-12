@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useProgress } from "@/hooks/useProgress"; // NEW
 import { supabase } from "../../lib/supabase";
 import styles from "./Header.module.css";
 
@@ -11,13 +10,6 @@ export default function Header() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-
-  // NEW: Get personalization status from useProgress hook
-  const { 
-    getPersonalizationStatusInfo, 
-    personalizationStatus,
-    loadPersonalizationStatus 
-  } = useProgress();
 
   useEffect(() => {
     // Get initial session
@@ -46,28 +38,6 @@ export default function Header() {
     router.push("/");
   };
 
-  // NEW: Handle notification click to refresh status
-  const handleNotificationClick = async () => {
-    if (user && loadPersonalizationStatus) {
-      await loadPersonalizationStatus(user.id);
-    }
-  };
-
-  // NEW: Get notification info
-  const getNotificationInfo = () => {
-    if (!user || !personalizationStatus) return null;
-    
-    const statusInfo = getPersonalizationStatusInfo && getPersonalizationStatusInfo();
-    if (!statusInfo || statusInfo.canProceed) return null;
-    
-    return {
-      message: personalizationStatus === 'processing' 
-        ? "⏳ Processing your personalized content..." 
-        : "⏳ Preparing your personalized content...",
-      type: personalizationStatus
-    };
-  };
-
   if (loading) {
     return (
       <header className={styles.header}>
@@ -88,7 +58,7 @@ export default function Header() {
     );
   }
 
-  const notificationInfo = getNotificationInfo();
+  const notificationInfo = null; // Removed notification
 
   return (
     <header className={styles.header}>
@@ -101,17 +71,6 @@ export default function Header() {
           />
           Iona Language App
         </Link>
-
-        {/* NEW: Personalization status notification */}
-        {notificationInfo && (
-          <div 
-            className={`${styles.notification} ${styles[notificationInfo.type]}`}
-            onClick={handleNotificationClick}
-            title="Click to refresh status"
-          >
-            {notificationInfo.message}
-          </div>
-        )}
 
         <nav className={styles.nav}>
           {user ? (
