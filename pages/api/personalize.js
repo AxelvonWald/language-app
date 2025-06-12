@@ -341,15 +341,15 @@ async function generateCleanTTSRequests(userId, profileData, formId) {
                 const userValue = profileData[variable];
                 if (userValue) {
                   // Determine field type for translation strategy
-                  const fieldType = variable === 'name' || variable === 'story_character' ? variable : 'general';
+                  const fieldType = variable; // Use variable name as field type
                   
-                  // Translate the user value
+                  // Translate the user value for Spanish text
                   const translationResult = await translateWithHybrid(userValue, fieldType);
                   
-                  // Replace in target sentence
+                  // Replace in target sentence (Spanish)
                   targetText = targetText.replace(`{${variable}}`, translationResult.translation);
                   
-                  // Replace in native sentence (keep original user input)
+                  // Replace in native sentence (English) - keep original user input
                   nativeText = nativeText.replace(`{${variable}}`, userValue);
                   
                   // Track if needs review

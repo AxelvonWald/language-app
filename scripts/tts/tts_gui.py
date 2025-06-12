@@ -66,7 +66,7 @@ class TTSManager:
             return None
 
     def parse_script_and_generate(self, script_text, track_type='bilingual'):
-        """Parse script and generate audio with track type info"""
+        """Parse script and generate audio with track type info and TTS optimization"""
         # More precise regex pattern
         pattern = r'\[([a-z]{2}|\d+\.?\d*s)\]\s*([^[]*?)(?=\[|$)'
         segments = re.findall(pattern, script_text)
@@ -75,6 +75,7 @@ class TTSManager:
         print(f"DEBUG: Found {len(segments)} segments")
         
         audio_segments = []
+        tts_cache = {}  # Cache TTS generations to avoid duplicates
         
         for i, (tag, content) in enumerate(segments):
             content = content.strip()
@@ -83,7 +84,21 @@ class TTSManager:
             # CHECK LANGUAGE TAGS FIRST (before checking for 's' ending)
             if tag in ['en', 'es'] and content:  # Language tag with content
                 print(f"DEBUG: Generating TTS for [{tag}]: {content}")
-                audio_data = self.generate_tts_segment(content, tag, track_type)
+                
+                # Create cache key for this text and voice combination
+                voice_name = self.voices['es_repeat'] if track_type == 'repetition' and tag == 'es' else self.voices[tag]
+                cache_key = f"{voice_name}:{content}"
+                
+                # Check if we've already generated TTS for this exact text + voice
+                if cache_key in tts_cache:
+                    print(f"DEBUG: Using cached TTS for: {content}")
+                    audio_data = tts_cache[cache_key]
+                else:
+                    print(f"DEBUG: Generating new TTS for: {content}")
+                    audio_data = self.generate_tts_segment(content, tag, track_type)
+                    if audio_data:
+                        tts_cache[cache_key] = audio_data
+                
                 if audio_data:
                     audio_segment = AudioSegment.from_wav(io.BytesIO(audio_data))
                     audio_segments.append(audio_segment)
@@ -108,6 +123,7 @@ class TTSManager:
         
         if audio_segments:
             print(f"DEBUG: Combining {len(audio_segments)} audio segments")
+            print(f"DEBUG: TTS Cache used {len(tts_cache)} unique generations (saved duplicates!)")
             combined_audio = sum(audio_segments)
             return combined_audio
         
