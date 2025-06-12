@@ -164,7 +164,8 @@ const handleSubmit = async (e) => {
         },
         body: JSON.stringify({
           userId: user.id,
-          profileData: updatedData
+          profileData: updatedData,
+          formId: personalizationId  // ADD THIS LINE - pass the form ID
         })
       })
       

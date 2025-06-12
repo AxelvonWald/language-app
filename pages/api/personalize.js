@@ -15,10 +15,10 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { userId, profileData } = req.body;
+    const { userId, profileData, formId } = req.body; // ADD formId parameter
 
-    if (!userId || !profileData) {
-      return res.status(400).json({ error: "Missing userId or profileData" });
+    if (!userId || !profileData || !formId) {
+      return res.status(400).json({ error: "Missing userId, profileData, or formId" });
     }
 
     // 1. Save personalization data (handle existing records properly)
@@ -58,11 +58,13 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: "Failed to save profile" });
     }
 
-    // 2. Generate TTS requests for all lessons
-    const ttsRequestsCreated = await generateTTSRequests(userId, profileData);
+    // 2. Generate TTS requests for lessons that use this form's data
+    const ttsRequestsCreated = await generateTTSRequests(userId, profileData, formId);
 
     // 3. Send admin notification about TTS requests
-    await sendTTSNotification(userId, ttsRequestsCreated);
+    if (ttsRequestsCreated > 0) {
+      await sendTTSNotification(userId, ttsRequestsCreated);
+    }
 
     res.status(200).json({
       success: true,
@@ -75,20 +77,33 @@ export default async function handler(req, res) {
   }
 }
 
-async function generateTTSRequests(userId, profileData) {
+async function generateTTSRequests(userId, profileData, formId) {
   const requests = [];
 
   try {
-    // Load sentences database first
+    // Load personalization forms to determine which lessons need TTS
+    const formsModule = await import(
+      `../../data/courses/en-es/personalization-forms.json`
+    );
+    const forms = formsModule.default;
+    
+    if (!forms[formId]) {
+      console.error(`Form ${formId} not found in personalization forms`);
+      return 0;
+    }
+    
+    const formConfig = forms[formId];
+    const lessonsToProcess = formConfig.usedInLessons || [];
+    
+    console.log(`Processing TTS for form "${formId}", lessons:`, lessonsToProcess);
+
+    // Load sentences database
     const sentencesModule = await import(
       `../../data/courses/en-es/sentences.json`
     );
     const sentences = sentencesModule.default;
 
-    // Only process lessons that actually exist
-    const existingLessons = [1, 2, 3, 4, 5];
-
-    for (const lessonId of existingLessons) {
+    for (const lessonId of lessonsToProcess) {
       try {
         // Dynamic import for lesson data
         const lessonModule = await import(
@@ -180,12 +195,10 @@ async function generateTTSRequests(userId, profileData) {
             requests.push({
               user_id: userId,
               lesson_id: lessonId,
-
               section_name: group.sections.map((s) => s.name).join(","),
               audio_filename: audioFile,
               combined_target_text: combinedTargetText,
               combined_native_text: combinedNativeText,
-
               sentence_count: group.sentenceIds.length,
               repeat_count: maxRepeatCount,
             });
@@ -220,7 +233,7 @@ async function generateTTSRequests(userId, profileData) {
       }
 
       console.log(
-        `Created ${requests.length} unique audio file TTS requests for user ${userId}`
+        `Created ${requests.length} TTS requests for user ${userId}, form ${formId}, lessons: ${lessonsToProcess.join(', ')}`
       );
       return requests.length;
     }
