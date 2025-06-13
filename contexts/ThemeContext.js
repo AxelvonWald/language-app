@@ -1,64 +1,46 @@
 // contexts/ThemeContext.js
-'use client'
-import { createContext, useContext, useEffect, useState } from 'react'
+"use client";
+import { createContext, useContext, useEffect, useState } from 'react';
 
-const ThemeContext = createContext()
+const ThemeContext = createContext();
 
 export function ThemeProvider({ children }) {
-  const [theme, setTheme] = useState('dark') // Default to dark
-  const [mounted, setMounted] = useState(false)
+  const [theme, setTheme] = useState('dark');
+  const [mounted, setMounted] = useState(false);
 
-  // Load saved theme on mount
+  // Load theme on mount
   useEffect(() => {
-    const getInitialTheme = () => {
-      // Check localStorage first
-      const saved = localStorage.getItem('theme')
-      if (saved && (saved === 'light' || saved === 'dark')) {
-        return saved
-      }
-      
-      // Fall back to system preference
-      if (typeof window !== 'undefined') {
-        return window.matchMedia('(prefers-color-scheme: dark)').matches 
-          ? 'dark' 
-          : 'light'
-      }
-      
-      return 'dark' // Final fallback
-    }
-
-    const initialTheme = getInitialTheme()
-    setTheme(initialTheme)
-    setMounted(true)
+    const savedTheme = localStorage.getItem('theme');
+    const initialTheme = savedTheme || 'dark';
     
-    // Apply theme to document
-    document.documentElement.setAttribute('data-theme', initialTheme)
-  }, [])
+    setTheme(initialTheme);
+    setMounted(true);
+    document.documentElement.setAttribute('data-theme', initialTheme);
+  }, []);
 
-  // Save theme changes to localStorage
   const toggleTheme = () => {
-    const newTheme = theme === 'dark' ? 'light' : 'dark'
-    setTheme(newTheme)
-    localStorage.setItem('theme', newTheme)
-    document.documentElement.setAttribute('data-theme', newTheme)
-  }
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+    document.documentElement.setAttribute('data-theme', newTheme);
+  };
 
-  // Don't render until mounted to avoid hydration mismatch
+  // Prevent flash during SSR
   if (!mounted) {
-    return children
+    return <div style={{ visibility: 'hidden' }}>{children}</div>;
   }
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
       {children}
     </ThemeContext.Provider>
-  )
+  );
 }
 
 export function useTheme() {
-  const context = useContext(ThemeContext)
-  if (context === undefined) {
-    throw new Error('useTheme must be used within a ThemeProvider')
+  const context = useContext(ThemeContext);
+  if (!context) {
+    throw new Error('useTheme must be used within a ThemeProvider');
   }
-  return context
+  return context;
 }

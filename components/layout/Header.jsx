@@ -3,15 +3,15 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useTheme } from "@/contexts/ThemeContext";
 import { supabase } from "../../lib/supabase";
 import styles from "./Header.module.css";
 
 export default function Header() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [theme, setTheme] = useState('dark');
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
-  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     // Get initial session
@@ -34,6 +34,21 @@ export default function Header() {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // Theme logic
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    setTheme(savedTheme);
+    setMounted(true);
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  }, []);
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+    document.documentElement.setAttribute('data-theme', newTheme);
+  };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -75,35 +90,39 @@ export default function Header() {
         <nav className={styles.nav}>
           {user ? (
             <>
-              <Link
-                href="/lessons"
-                className={styles.navLink}
-              >
+              <Link href="/lessons" className={styles.navLink}>
                 Lessons
+              </Link>
+              <Link href="/listen" className={styles.navLink}>
+                Listen
               </Link>
               <Link href="/account" className={styles.navLink}>
                 Account
               </Link>
-              <button 
-                onClick={toggleTheme}
-                className={styles.themeToggle}
-                title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
-              >
-                {theme === 'dark' ? '◐' : '◑'}
-              </button>
+              {mounted && (
+                <button 
+                  onClick={toggleTheme}
+                  className={styles.themeToggle}
+                  title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
+                >
+                  {theme === 'dark' ? '◐' : '◑'}
+                </button>
+              )}
               <button onClick={handleLogout} className={styles.logoutButton}>
                 Logout
               </button>
             </>
           ) : (
             <>
-              <button 
-                onClick={toggleTheme}
-                className={styles.themeToggle}
-                title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
-              >
-                {theme === 'dark' ? '◐' : '◑'}
-              </button>
+              {mounted && (
+                <button 
+                  onClick={toggleTheme}
+                  className={styles.themeToggle}
+                  title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
+                >
+                  {theme === 'dark' ? '◐' : '◑'}
+                </button>
+              )}
               <Link href="/login" className={styles.navLink}>
                 Login
               </Link>

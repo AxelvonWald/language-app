@@ -1,7 +1,7 @@
 // hooks/useProgress.js
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { useCourseFlow } from "./useCourseFlow";
 
@@ -9,7 +9,7 @@ export function useProgress() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [personalizationData, setPersonalizationData] = useState(null);
-  const [personalizationStatus, setPersonalizationStatus] = useState(null); // NEW
+  const [personalizationStatus, setPersonalizationStatus] = useState(null);
   const [userProgress, setUserProgress] = useState([]);
   const [userStatus, setUserStatus] = useState("pending");
 
@@ -22,83 +22,8 @@ export function useProgress() {
     loading: flowLoading,
   } = useCourseFlow();
 
-  // Initialize auth state and load user data
-  useEffect(() => {
-    const getInitialSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      setUser(session?.user || null);
-
-      if (session?.user) {
-        await loadUserData(session.user.id);
-      }
-
-      setLoading(false);
-    };
-
-    getInitialSession();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setUser(session?.user || null);
-
-      if (session?.user) {
-        await loadUserData(session.user.id);
-      } else {
-        setPersonalizationData(null);
-        setPersonalizationStatus(null); // NEW
-        setUserProgress([]);
-        setUserStatus("pending");
-      }
-
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  // Load user's personalization data, status, and progress
-  const loadUserData = async (userId) => {
-    try {
-      const { data: profileData, error: profileError } = await supabase
-        .from("user_profiles")
-        .select("profile_data, user_status")
-        .eq("user_id", userId)
-        .single();
-
-      if (profileError && profileError.code !== "PGRST116") {
-        console.error("Error loading profile:", profileError);
-      } else if (profileData) {
-        setPersonalizationData(profileData.profile_data);
-        setUserStatus(profileData.user_status || "pending");
-      }
-
-      // NEW: Load personalization processing status
-      await loadPersonalizationStatus(userId);
-
-      if (profileData?.user_status === "approved") {
-        const { data: progressData, error: progressError } = await supabase
-          .from("user_progress")
-          .select("*")
-          .eq("user_id", userId)
-          .eq("course_id", "en-es")
-          .order("lesson_id");
-
-        if (progressError) {
-          console.error("Error loading progress:", progressError);
-        } else {
-          setUserProgress(progressData || []);
-        }
-      }
-    } catch (error) {
-      console.error("Error in loadUserData:", error);
-    }
-  };
-
-  // NEW: Load personalization processing status from TTS requests
-  const loadPersonalizationStatus = async (userId) => {
+  // Load personalization processing status from TTS requests
+  const loadPersonalizationStatus = useCallback(async (userId) => {
     try {
       // Check TTS requests for lesson 7 (first lesson to use personalization)
       const { data: ttsRequests, error } = await supabase
@@ -144,7 +69,82 @@ export function useProgress() {
       console.error("Error in loadPersonalizationStatus:", error);
       setPersonalizationStatus("unknown");
     }
-  };
+  }, []);
+
+  // Load user's personalization data, status, and progress
+  const loadUserData = useCallback(async (userId) => {
+    try {
+      const { data: profileData, error: profileError } = await supabase
+        .from("user_profiles")
+        .select("profile_data, user_status")
+        .eq("user_id", userId)
+        .single();
+
+      if (profileError && profileError.code !== "PGRST116") {
+        console.error("Error loading profile:", profileError);
+      } else if (profileData) {
+        setPersonalizationData(profileData.profile_data);
+        setUserStatus(profileData.user_status || "pending");
+      }
+
+      // Load personalization processing status
+      await loadPersonalizationStatus(userId);
+
+      if (profileData?.user_status === "approved") {
+        const { data: progressData, error: progressError } = await supabase
+          .from("user_progress")
+          .select("*")
+          .eq("user_id", userId)
+          .eq("course_id", "en-es")
+          .order("lesson_id");
+
+        if (progressError) {
+          console.error("Error loading progress:", progressError);
+        } else {
+          setUserProgress(progressData || []);
+        }
+      }
+    } catch (error) {
+      console.error("Error in loadUserData:", error);
+    }
+  }, [loadPersonalizationStatus]);
+
+  // Initialize auth state and load user data
+  useEffect(() => {
+    const getInitialSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      setUser(session?.user || null);
+
+      if (session?.user) {
+        await loadUserData(session.user.id);
+      }
+
+      setLoading(false);
+    };
+
+    getInitialSession();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      setUser(session?.user || null);
+
+      if (session?.user) {
+        await loadUserData(session.user.id);
+      } else {
+        setPersonalizationData(null);
+        setPersonalizationStatus(null);
+        setUserProgress([]);
+        setUserStatus("pending");
+      }
+
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [loadUserData]);
 
   // Save personalization data to Supabase
   const savePersonalizationData = async (formData) => {
@@ -200,12 +200,12 @@ export function useProgress() {
     return userStatus === "approved";
   };
 
-  // NEW: Check if personalized content is ready for lessons
+  // Check if personalized content is ready for lessons
   const isPersonalizationReady = () => {
     return personalizationStatus === "ready";
   };
 
-  // NEW: Get personalization status info for UI
+  // Get personalization status info for UI
   const getPersonalizationStatusInfo = () => {
     switch (personalizationStatus) {
       case "ready":
@@ -251,15 +251,13 @@ export function useProgress() {
         steps.push({
           type: "lesson",
           id: progress.lesson_id,
-          stepNumber: progress.lesson_id, // This could be enhanced with actual step numbers
+          stepNumber: progress.lesson_id,
         });
       }
     });
 
     // Add completed personalization steps
     if (personalizationData && courseFlow) {
-      // This is a simplified check - you might want to enhance this
-      // to check which specific personalization forms have been completed
       const hasBasicInfo = personalizationData.name;
       if (hasBasicInfo) {
         steps.push({ type: "personalization", id: "basic" });
@@ -310,7 +308,7 @@ export function useProgress() {
   const canAccessLesson = (lessonId) => {
     if (!isApproved()) return false;
 
-    // NEW: Special check for lesson 7 - requires personalized content to be ready
+    // Special check for lesson 7 - requires personalized content to be ready
     if (lessonId === 7) {
       const statusInfo = getPersonalizationStatusInfo();
       if (!statusInfo.canProceed) {
@@ -416,14 +414,14 @@ export function useProgress() {
     user,
     loading: loading || flowLoading,
     personalizationData,
-    personalizationStatus, // NEW
+    personalizationStatus,
     userProgress,
     userStatus,
     savePersonalizationData,
     hasPersonalized,
     isApproved,
-    isPersonalizationReady, // NEW
-    getPersonalizationStatusInfo, // NEW
+    isPersonalizationReady,
+    getPersonalizationStatusInfo,
     canAccessLesson,
     canAccessPersonalization,
     isLessonCompleted,
@@ -434,6 +432,6 @@ export function useProgress() {
     getCompletedSteps,
     courseFlow,
     refreshUserData,
-    loadPersonalizationStatus, // NEW - expose for manual refresh
+    loadPersonalizationStatus,
   };
 }

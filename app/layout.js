@@ -2,7 +2,6 @@
 export const dynamic = 'force-dynamic'
 import { Geist, Geist_Mono } from "next/font/google";
 import Header from "@/components/layout/Header";
-import { ThemeProvider } from "@/contexts/ThemeContext";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -26,12 +25,10 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        <ThemeProvider>
-          <Header />
-          <main className="page-wrapper">
-            {children}
-          </main>
-        </ThemeProvider>
+        <Header />
+        <main className="page-wrapper">
+          {children}
+        </main>
       </body>
     </html>
   );
