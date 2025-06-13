@@ -294,6 +294,7 @@ export default function ListenPage() {
 
         <div className={styles.audioPlayerWrapper}>
           <AudioPlayer
+            key={`${currentTrack.lessonId}-${currentTrack.section}-${currentTrackIndex}`}
             audioPath={currentTrack.audioPath}
             lessonId={currentTrack.lessonId}
             sectionName={currentTrack.section}
