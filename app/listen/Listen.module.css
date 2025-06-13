@@ -315,7 +315,81 @@
   100% { transform: rotate(360deg); }
 }
 
-/* Mobile responsiveness */
+.debugPanel {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  transition: all 0.15s ease;
+}
+
+.debugPanel:hover {
+  border-color: var(--border-secondary);
+}
+
+.debugPanel summary {
+  cursor: pointer;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+  user-select: none;
+}
+
+.debugPanel summary:hover {
+  color: var(--text-secondary);
+}
+
+.debugContent {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-primary);
+}
+
+.debugSection {
+  margin-bottom: 1.5rem;
+}
+
+.debugSection:last-child {
+  margin-bottom: 0;
+}
+
+.debugSection h4 {
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.debugSection p {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  margin-bottom: 0.25rem;
+  line-height: 1.4;
+}
+
+.debugList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.debugList li {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  margin-bottom: 0.25rem;
+  padding-left: 1rem;
+  position: relative;
+}
+
+.debugList li::before {
+  content: "•";
+  color: var(--primary);
+  position: absolute;
+  left: 0;
+  font-weight: bold;
+}
 @media (max-width: 768px) {
   .container {
     padding: 1rem;
